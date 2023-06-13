@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HomePage</title>
+    <style>
+        body {
+            background-color: #283d83;
+        }
+    </style>
+</head>
+<body>
+Это шаблон. Текущее время {{ time }}
+<br>{{ session_id }}
+<br>
+<form method="post">
+    <input name="name">
+    <button type="submit">send</button>
+</form>
+
+
+{% for i in lst %}
+<br>
+{{ i }}
+{% endblock %}
+</body>
+</html>
