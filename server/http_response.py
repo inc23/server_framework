@@ -18,7 +18,6 @@ class Response:
         print(headers_list)
         self.headers = b''.join(headers_list)
 
-
     def create_response(self, body: bytes = b''):
         content = [self.start_line, self.headers, b'\r\n' if body else b'', body]
         return b''.join(content)

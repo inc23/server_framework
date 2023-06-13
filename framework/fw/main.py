@@ -1,25 +1,29 @@
 import re
-from typing import Callable
-from typing import List
+from typing import Callable, List, Type
 from framework.fw.request import Request
 from framework.fw.view import View, Page404
+from .response import Response
 from .urls import Url, start_urlpatterns
 from .exception import MethodError
+from .middleware import Middleware
 
 
 class Framework:
 
-    __slots__ = ('urls', 'settings')
+    __slots__ = ('urls', 'settings', 'middlewares')
 
-    def __init__(self, urls: List[Url], settings: dict):
+    def __init__(self, urls: List[Url], settings: dict, middlewares: List[Type[Middleware]]):
         self.urls = start_urlpatterns
         self.urls.extend(urls)
         self.settings = settings
+        self.middlewares = middlewares
 
     def __call__(self, environ: dict, start_response: Callable):
         view = self._get_view(environ)
         request = self._get_request(environ)
+        self._to_request(request)
         response = self._get_response(environ, view, request)
+        self._to_response(response)
         start_response(response.status_code, response.headers.items())
         return response.body
 
@@ -51,4 +55,13 @@ class Framework:
         if hasattr(view, method):
             return getattr(view, method)(request)
         raise MethodError
+
+    def _to_response(self, response: Response):
+        for middleware in self.middlewares:
+            middleware().to_response(response)
+
+    def _to_request(self, request: Request):
+        for middleware in self.middlewares:
+            middleware().to_request(request)
+
 
