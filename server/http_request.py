@@ -10,7 +10,7 @@ class RequestParse:
         self.start_line = start_headers_list.pop(0)
         self.headers = start_headers_list
 
-    def parse_starline(self):
+    def parse_starline(self) -> tuple:
         method, path, protocol = self.start_line.split(' ')
         if '?' in path:
             path, qs = path.split('?')
@@ -18,14 +18,14 @@ class RequestParse:
             qs = ''
         return method, path, qs, protocol
 
-    def parse_headers(self):
+    def parse_headers(self) -> dict:
         headers_dict = dict()
         for header in self.headers:
             k, v = header.split(': ')
             headers_dict.update({k.upper(): v})
         return headers_dict
 
-    def parse_body(self):
+    def parse_body(self) -> str:
         if self.body is not None:
             return self.body
         return ''

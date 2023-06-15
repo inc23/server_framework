@@ -6,7 +6,7 @@ from .fw.template_engine import build_template
 
 class Home(View):
 
-    def get(self, request: Request, *args, **kwargs):
+    def get(self, request: Request, *args, **kwargs) -> Response:
         body = build_template(
             request,
             {'time': str(datetime.utcnow()), 'lst': range(10), 'session_id': request.session_id},
@@ -17,7 +17,7 @@ class Home(View):
 
 class Hello(View):
 
-    def get(self, request: Request, *args, **kwargs):
+    def get(self, request: Request, *args, **kwargs) -> Response:
         body = build_template(
             request,
             {'name': 'incognito'},
@@ -25,7 +25,7 @@ class Hello(View):
         )
         return Response(request, body=body)
 
-    def post(self, request: Request, *args, **kwargs):
+    def post(self, request: Request, *args, **kwargs) -> Response:
         name = request.POST.get('name')
         if name:
             name = name[0]
@@ -39,7 +39,7 @@ class Hello(View):
 
 class Get(View):
 
-    def get(self, request: Request, *args, **kwargs):
+    def get(self, request: Request, *args, **kwargs) -> Response:
         qs = str(request.GET.items())
         return Response(request, body=qs)
 

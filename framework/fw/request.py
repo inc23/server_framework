@@ -1,5 +1,5 @@
 from urllib.parse import parse_qs
-from typing import AnyStr
+from typing import AnyStr, Any
 
 
 class Request:
@@ -11,11 +11,11 @@ class Request:
         self._build_post_dict(environ['wsgi_input'])
         self.extra = dict()
 
-    def __getattr__(self, item):
+    def __getattr__(self, item) -> Any:
         return self.extra.get(item)
 
-    def _build_get_dict(self, param: str):
+    def _build_get_dict(self, param: str) -> None:
         self.GET = parse_qs(param)
 
-    def _build_post_dict(self, param: AnyStr):
+    def _build_post_dict(self, param: AnyStr) -> None:
         self.POST = parse_qs(param)

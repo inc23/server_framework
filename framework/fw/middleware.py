@@ -15,13 +15,13 @@ class Middleware:
 
 class Session(Middleware):
 
-    def to_response(self, response: Response):
+    def to_response(self, response: Response) -> None:
         if not response.request.session_id:
             response.headers.update(
                 {'Set-Cookie': f'session_id={uuid4()}'}
             )
 
-    def to_request(self, request: Request):
+    def to_request(self, request: Request) -> None:
         cookies = request.environ.get('COOKIE')
         if not cookies:
             return

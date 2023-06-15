@@ -18,7 +18,7 @@ class Framework:
         self.settings = settings
         self.middlewares = middlewares
 
-    def __call__(self, environ: dict, start_response: Callable):
+    def __call__(self, environ: dict, start_response: Callable) -> bytes:
         view = self._get_view(environ)
         request = self._get_request(environ)
         self._to_request(request)
@@ -28,12 +28,12 @@ class Framework:
         return response.body
 
     @staticmethod
-    def _prepare_url(url: str):
+    def _prepare_url(url: str) -> str:
         if url[-1] == '/':
             return url[:-1]
         return url
 
-    def _find_view(self, url: str):
+    def _find_view(self, url: str) -> Type[View]:
         url = self._prepare_url(url)
         for path in self.urls:
             m = re.match(path.url, url)
@@ -41,26 +41,26 @@ class Framework:
                 return path.view
         return Page404
 
-    def _get_view(self, environ: dict):
+    def _get_view(self, environ: dict) -> View:
         url = environ['PATH_INFO']
         view = self._find_view(url)
         return view()
 
-    def _get_request(self, environ: dict):
+    def _get_request(self, environ: dict) -> Request:
         return Request(environ, self.settings)
 
     @staticmethod
-    def _get_response(environ: dict, view: View, request: Request):
+    def _get_response(environ: dict, view: View, request: Request) -> View:
         method = environ['REQUEST_METHOD'].lower()
         if hasattr(view, method):
             return getattr(view, method)(request)
         raise MethodError
 
-    def _to_response(self, response: Response):
+    def _to_response(self, response: Response) -> None:
         for middleware in self.middlewares:
             middleware().to_response(response)
 
-    def _to_request(self, request: Request):
+    def _to_request(self, request: Request) -> None:
         for middleware in self.middlewares:
             middleware().to_request(request)
 

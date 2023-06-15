@@ -18,13 +18,13 @@ class Server:
         self.run_server()
         self.run_event_loop()
 
-    def run_server(self):
+    def run_server(self) -> None:
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server_socket.bind((self.host, self.port))
         self.server_socket.listen()
         self.selector.register(self.server_socket, selectors.EVENT_READ, self.accept_connection)
 
-    def accept_connection(self):
+    def accept_connection(self) -> None:
         if self.client_socket is not None:
             self.client_socket.close()
             self.selector.unregister(self.client_socket)
@@ -32,7 +32,7 @@ class Server:
         print(f'connect with {self.addr}')
         self.selector.register(self.client_socket, selectors.EVENT_READ, self.send_response)
 
-    def send_response(self):
+    def send_response(self) -> None:
         try:
             request = self.client_socket.recv(1094)
             if request:
@@ -54,7 +54,7 @@ class Server:
             self.client_socket.close()
             self.client_socket = None
 
-    def run_event_loop(self):
+    def run_event_loop(self) -> None:
         while True:
             events = self.selector.select()
             try:

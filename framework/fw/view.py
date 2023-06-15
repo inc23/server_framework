@@ -13,5 +13,5 @@ class View:
 
 class Page404(View):
 
-    def get(self, request: Request, *args, **kwargs):
+    def get(self, request: Request, *args, **kwargs) -> Response:
         return Response(request, body='404')

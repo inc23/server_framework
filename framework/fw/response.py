@@ -1,3 +1,5 @@
+from typing import Any
+
 from .request import Request
 
 
@@ -15,16 +17,16 @@ class Response:
             self._set_body(body)
         self.extra = dict()
 
-    def __getattr__(self, item):
+    def __getattr__(self, item) -> Any:
         return self.extra.get(item)
 
-    def _set_headers(self):
+    def _set_headers(self) -> None:
         self.headers.update({
             'Content-type': 'text/html; charset=utf-8',
             "Content-Length": 0
         })
 
-    def _set_body(self, body):
+    def _set_body(self, body) -> None:
         print(body.encode())
         self.body = body.encode('utf-8')
         self.headers.update({"Content-Length": str(len(self.body))})

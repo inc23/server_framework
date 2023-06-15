@@ -27,6 +27,7 @@ class MetaModel(type):
         conn = sqlite3.connect(bd_path)
         cursor = conn.cursor()
         for query in mcs._create_query():
+            print(query)
             cursor.execute(query)
             conn.commit()
 
@@ -35,8 +36,8 @@ class MetaModel(type):
         query_list = []
         for model, fields in mcs.class_dict.items():
             query = f'CREATE TABLE IF NOT EXISTS {model} (\r\n\t'
-            query += ','.join(mcs._create_lines(fields)) + '\r\n\t'
-            query = query[:-1] + ');'
+            query += f"{','.join(mcs._create_lines(fields))}\r\n\t"
+            query = f'{query[:-1]});'
             query_list.append(query)
         return query_list
 
