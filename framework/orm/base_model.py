@@ -2,6 +2,7 @@ import os
 from typing import Generator
 import sqlite3
 from field import Field, IdField, FloatField, PasswordField, IntField
+from framework.settings import db_dir_path, db_name
 
 
 class MetaModel(type):
@@ -21,41 +22,46 @@ class MetaModel(type):
         return model
 
     @classmethod
-    def create_tables(mcs) -> None:
-        path = os.path.dirname(os.path.abspath(__file__))
-        bd_path = os.path.join(path, 'db.db')
-        conn = sqlite3.connect(bd_path)
+    def create_tables(mcs):
+        CreateTable(mcs.class_dict)
+
+
+class CreateTable:
+
+    def __init__(self, classes_dict: dict):
+        self.classes_dict = classes_dict
+        self._create_tables()
+
+    def _create_tables(self) -> None:
+        db_path = os.path.join(db_dir_path, db_name)
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
-        for query in mcs._create_query():
-            print(query)
+        for query in self._create_query():
             cursor.execute(query)
             conn.commit()
 
-    @classmethod
-    def _create_query(mcs) -> list:
+    def _create_query(self) -> list:
         query_list = []
-        for model, fields in mcs.class_dict.items():
+        for model, fields in self.classes_dict.items():
             query = f'CREATE TABLE IF NOT EXISTS {model} (\r\n\t'
-            query += f"{','.join(mcs._create_lines(fields))}\r\n\t"
-            query = f'{query[:-1]});'
+            query += f"{','.join(self._create_lines(fields))}\r\n\t);"
             query_list.append(query)
         return query_list
 
-    @classmethod
-    def _create_lines(mcs, fields: dict) -> Generator:
-        yield ',\r\n\t'.join(mcs._create_line(fields))
-        foreign_key_line = ',\t'.join(mcs._create_foreign_key_line(fields))
+    def _create_lines(self, fields: dict) -> Generator:
+        yield ',\r\n\t'.join(self._create_line(fields))
+        foreign_key_line = ',\t'.join(self._create_foreign_key_line(fields))
         if foreign_key_line:
             yield foreign_key_line
 
-    @classmethod
-    def _create_line(mcs, field: dict) -> Generator:
+    @staticmethod
+    def _create_line(field: dict) -> Generator:
         for name, field in field.items():
             line = f'{name} {field.type}'
             yield line
 
-    @classmethod
-    def _create_foreign_key_line(mcs, field: dict) -> Generator:
+    @staticmethod
+    def _create_foreign_key_line(field: dict) -> Generator:
         for name, field in field.items():
             if field.foreign_key is not None:
                 yield f'\r\n\tFOREIGN KEY ({name}) REFERENCES {field.foreign_key}'
