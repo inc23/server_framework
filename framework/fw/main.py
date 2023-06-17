@@ -6,6 +6,7 @@ from .response import Response
 from .urls import Url, start_urlpatterns
 from .exception import MethodError
 from .middleware import Middleware
+from ..orm.base_model import MetaModel
 
 
 class Framework:
@@ -17,6 +18,7 @@ class Framework:
         self.urls.extend(urls)
         self.settings = settings
         self.middlewares = middlewares
+        MetaModel.create_tables()
 
     def __call__(self, environ: dict, start_response: Callable) -> bytes:
         view = self._get_view(environ)
@@ -50,7 +52,7 @@ class Framework:
         return Request(environ, self.settings)
 
     @staticmethod
-    def _get_response(environ: dict, view: View, request: Request) -> View:
+    def _get_response(environ: dict, view: View, request: Request) -> Response:
         method = environ['REQUEST_METHOD'].lower()
         if hasattr(view, method):
             return getattr(view, method)(request)

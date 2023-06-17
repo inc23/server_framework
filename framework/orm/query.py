@@ -7,11 +7,11 @@ COMA = ', '
 
 class Q:
 
-    def __init__(self, exp: str = AND, **kwargs) -> None:
+    def __init__(self, exp: str = AND, **kwargs):
         self.exp = exp
         self.data = kwargs
 
-    def __str__(self) -> str:
+    def __str__(self):
         kv_pair = [f'{k} = {v}' for k, v in self.data.items() if '__' not in k]
         for k, v in self.data.items():
             if v is not None:
@@ -32,7 +32,7 @@ class Q:
         kv_pair = [f'{k} = "{v}"' for k, v in self.data.items()]
         return self.exp.join(kv_pair)
 
-    def __bool__(self)  -> bool:
+    def __bool__(self):
         return bool(self.data)
 
 
@@ -64,7 +64,7 @@ class Select(BaseExp):
     def line(self) -> str:
         return ','.join(self.data)
 
-    def __bool__(self) -> bool:
+    def __bool__(self):
         return bool(self.data)
 
 
@@ -80,7 +80,7 @@ class SelectD(BaseExp):
     def line(self) -> str:
         return ','.join(self.data)
 
-    def __bool__(self) -> bool:
+    def __bool__(self):
         return bool(self.data)
 
 
@@ -96,7 +96,7 @@ class From(BaseExp):
     def line(self) -> str:
         return ','.join(self.data)
 
-    def __bool__(self) -> bool:
+    def __bool__(self):
         return bool(self.data)
 
 
@@ -112,7 +112,7 @@ class Update(BaseExp):
     def line(self) -> str:
         return ','.join(self.data)
 
-    def __bool__(self) -> bool:
+    def __bool__(self):
         return bool(self.data)
 
 
@@ -128,7 +128,7 @@ class Set(BaseExp):
     def line(self) -> str:
         return self.q.update_q()
 
-    def __bool__(self) -> bool:
+    def __bool__(self):
         return bool(self.q)
 
 
@@ -144,7 +144,7 @@ class Where(BaseExp):
     def line(self) -> str:
         return str(self.q)
 
-    def __bool__(self) -> bool:
+    def __bool__(self):
         return bool(self.q)
 
 
@@ -161,7 +161,7 @@ class Insert(BaseExp):
     def add(self, *args) -> None:
         self.data.extend(args)
 
-    def __bool__(self) -> bool:
+    def __bool__(self):
         return bool(self.data)
 
     def definition(self) -> str:
@@ -180,7 +180,7 @@ class Values(BaseExp):
     def add(self, *args) -> None:
         self.data.extend(args)
 
-    def __bool__(self) -> bool:
+    def __bool__(self):
         return bool(self.data)
 
     def line(self) -> str:
@@ -200,7 +200,7 @@ class Delete(BaseExp):
     def add(self, table: str) -> None:
         self.table = table
 
-    def __bool__(self) -> bool:
+    def __bool__(self):
         return bool(self.table)
 
     def line(self) -> str:

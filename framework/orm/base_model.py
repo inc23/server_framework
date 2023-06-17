@@ -1,8 +1,7 @@
-import os
 from typing import Generator
-import sqlite3
-from field import Field, IdField, FloatField, PasswordField, IntField
-from framework.settings import db_dir_path, db_name
+from .field import Field, IdField
+from .connector import connector
+from .manager import Manager
 
 
 class MetaModel(type):
@@ -10,13 +9,17 @@ class MetaModel(type):
 
     def __new__(mcs, model_name: str, parents: tuple, attrs: dict):
         fields = {'id': IdField()}
+        new_attr = dict()
         for k, v in attrs.items():
             if isinstance(v, Field):
                 fields.update({k: v})
+            else:
+                new_attr.update({k: v})
         model = super(MetaModel, mcs).__new__(mcs, model_name, parents, attrs)
         name = attrs['__qualname__'].lower()
-        setattr(model, 'fields', fields)
-        setattr(model, 'model_name', name)
+        model.fields = fields
+        model.model_name = attrs['__qualname__'].lower()
+        model.objects = Manager(model)
         if name != 'basemodel':
             mcs.class_dict.update({name: fields})
         return model
@@ -33,8 +36,7 @@ class CreateTable:
         self._create_tables()
 
     def _create_tables(self) -> None:
-        db_path = os.path.join(db_dir_path, db_name)
-        conn = sqlite3.connect(db_path)
+        conn = connector.get_connector()
         cursor = conn.cursor()
         for query in self._create_query():
             cursor.execute(query)
@@ -68,19 +70,17 @@ class CreateTable:
 
 
 class BaseModel(metaclass=MetaModel):
-    pass
+
+    def __init__(self, **kwargs):
+        super(BaseModel, self).__init__()
+        self.new_model_instance_fields_dict = dict()
+        if kwargs:
+            for key in self.fields:
+                if key != 'id':
+                    setattr(self, key, kwargs.get(key, None))
+
+    def save(self):
+        self.objects.new(*self.new_model_instance_fields_dict.values())
 
 
-class OneTable(BaseModel):
 
-    one = FloatField()
-    two = IntField()
-
-
-class TwoTable(BaseModel):
-    one = IntField(foreign_key='one_table.id')
-    two = FloatField()
-    three = IntField(foreign_key='one_table.id')
-
-
-MetaModel.create_tables()

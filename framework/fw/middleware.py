@@ -28,5 +28,3 @@ class Session(Middleware):
         session_id = parse_qs(cookies)['session_id']
         request.extra['session_id'] = session_id
 
-
-middlewares = [Session]
