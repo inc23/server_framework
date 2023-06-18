@@ -22,14 +22,13 @@ for i in range(10):
     data2.append(Data(i*100, i*1000))
 
 
-
 class Home(View):
 
     def get(self, request: Request, *args, **kwargs) -> Response:
         body = build_template(
             request,
             {'time': str(datetime.utcnow()), 'lst': data, 'lst2': data2,
-             'lst3': range(10), 'some_bool': None, 'session_id': request.session_id},
+             'lst3': range(10), 'some_bool': True, 'session_id': request.session_id},
             'home.html'
         )
         return Response(request, body=body)

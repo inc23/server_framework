@@ -1,6 +1,7 @@
 import socket
 import selectors
 import traceback
+from time import time, sleep
 from typing import Callable
 from .environ import Environ
 from .http_response import Response
@@ -36,6 +37,7 @@ class Server:
         try:
             request = self.client_socket.recv(1094)
             if request:
+                t1 = time()
                 if self.framework is not None:
                     resp = Response()
                     environ = Environ(request).get_environ()
@@ -44,6 +46,8 @@ class Server:
                 else:
                     response = '404'.encode('utf-8')
                 self.client_socket.send(response)
+                timeout = (time() - t1)*1000
+                print(f'timeout time msec {timeout}')
 
         except Exception:
             traceback.print_exc()
