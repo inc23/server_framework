@@ -1,5 +1,5 @@
 from typing import Generator
-from .field import Field, IdField
+from .field import FieldBase, IdField
 from .connector import connector
 from .manager import Manager
 
@@ -8,14 +8,13 @@ class MetaModel(type):
     class_dict = dict()
 
     def __new__(mcs, model_name: str, parents: tuple, attrs: dict):
-        fields = {'id': IdField()}
-        new_attr = dict()
-        for k, v in attrs.items():
-            if isinstance(v, Field):
+        fields = dict()
+        new_attrs = {'id': IdField(nullable=True)}
+        new_attrs.update(attrs)
+        for k, v in new_attrs.items():
+            if isinstance(v, FieldBase):
                 fields.update({k: v})
-            else:
-                new_attr.update({k: v})
-        model = super(MetaModel, mcs).__new__(mcs, model_name, parents, attrs)
+        model = super(MetaModel, mcs).__new__(mcs, model_name, parents, new_attrs)
         name = attrs['__qualname__'].lower()
         model.fields = fields
         model.model_name = attrs['__qualname__'].lower()
@@ -71,16 +70,13 @@ class CreateTable:
 
 class BaseModel(metaclass=MetaModel):
 
-    def __init__(self, **kwargs):
+    def __init__(self, new_instance: bool = True, **kwargs):
         super(BaseModel, self).__init__()
-        self.new_model_instance_fields_dict = dict()
+        self.value_fields_dict = dict()
+        self.new_instance = new_instance
         if kwargs:
             for key in self.fields:
-                if key != 'id':
-                    setattr(self, key, kwargs.get(key, None))
+                setattr(self, key, kwargs.get(key, None))
 
     def save(self):
-        self.objects.new(*self.new_model_instance_fields_dict.values())
-
-
-
+        self.objects.save(self.value_fields_dict, self)

@@ -18,8 +18,6 @@ class DBConnector:
         return self.cursor.fetchall()
 
     def create(self, query, *args):
-        print(args)
-        args = [None, *args]
         self.cursor.execute(query, args)
         self.conn.commit()
 

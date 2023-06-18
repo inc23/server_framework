@@ -1,5 +1,7 @@
 from typing import Generator
 
+from framework.orm.field import Expression
+
 AND = ' AND '
 OR = ' OR '
 COMA = ', '
@@ -135,11 +137,14 @@ class Set(BaseExp):
 class Where(BaseExp):
     name = 'WHERE'
 
-    def __init__(self, exp: str = AND, **kwargs):
-        self.q = Q(exp, **kwargs)
+    def __init__(self):
+        self.q = None
 
-    def add(self, exp: str = AND, **kwargs) -> None:
-        self.q = Q(exp, **kwargs)
+    def add(self, exp: str = AND, expression: Expression = None, **kwargs) -> None:
+        if expression is None:
+            self.q = Q(exp, **kwargs)
+        else:
+            self.q = str(expression)[1:-1]
 
     def line(self) -> str:
         return str(self.q)
@@ -187,7 +192,7 @@ class Values(BaseExp):
         return ', '.join(self.data)
 
     def definition(self) -> str:
-        items = ','.join(['?'] * (len(self.data) + 1))
+        items = ','.join(['?'] * len(self.data))
         return f'{self.name} ({items})'
 
 
@@ -233,8 +238,8 @@ class Query:
         self.data['from'].add(*args)
         return self
 
-    def WHERE(self, **kwargs):
-        self.data['where'].add(**kwargs)
+    def WHERE(self, expression: Expression = None, **kwargs):
+        self.data['where'].add(expression=expression, **kwargs)
         return self
 
     def INSERT(self, table, *args):

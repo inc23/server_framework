@@ -1,27 +1,6 @@
-from typing import List
 from .connector import connector
+from .field import Expression
 from .query import Query
-
-
-class ModelResult:
-
-    def __init__(self, name: str, result_dict: dict):
-        self.result_dict = result_dict
-        for field, val in result_dict.items():
-            setattr(self, field, val)
-        self._name = name
-        self.__class__.__qualname__ = f'{name.capitalize()}ResultId{self.id}'
-
-    def save(self) -> None:
-        set_dict = dict()
-        for key in self.result_dict:
-            if self.result_dict[key] != getattr(self, key):
-                set_dict.update({key: getattr(self, key)})
-        q = Query()
-        q = q.UPDATE(self._name).SET(
-            **set_dict).WHERE(id=self.id)
-        query = str(q)
-        connector.update(query)
 
 
 class Manager:
@@ -34,35 +13,50 @@ class Manager:
         self.q = q.SELECT(*self.fields).FROM(self.model_name)
         self.conn = connector
 
-    def _fetch(self) -> List[ModelResult]:
+    def _fetch(self):
         query = str(self.q)
-        q = Query()
-        self.q = q.SELECT(*self.fields).FROM(self.model_name)
         db_result = self.conn.fetch(query)
         result = []
-        result_dict = dict()
         for row in db_result:
+            model = self.model(new_instance=False)
             for field, val in zip(self.fields, row):
-                result_dict.update({field: val})
-            result.append(ModelResult(self.model_name, result_dict))
+                setattr(model, field, val)
+            result.append(model)
         return result
 
-    def filter(self, **kwargs):
-        self.q = self.q.WHERE(**kwargs)
+    def filter(self, expression: Expression = None, **kwargs):
+        self.q = self.q.WHERE(expression=expression, **kwargs)
+        print(self.q)
         return self
 
-    def all(self) -> List[ModelResult]:
+    def all(self):
         return self._fetch()
 
-    def get(self, **kwargs) -> ModelResult:
+    def get(self, **kwargs):
         self.filter(**kwargs)
-        return self._fetch()[0]
+        result = self._fetch()[0]
+        return result
 
-    def new(self, *args) -> None:
+    def save(self, fields_dict: dict = None, instance=None, ) -> None:
+        for key in self.model.fields:
+            getattr(instance, key)
+        if instance.new_instance:
+            self._new(fields_dict)
+        else:
+            self._update(instance)
+
+    def _update(self, instance) -> None:
         q = Query()
-        q = q.INSERT(self.model.model_name, *self.fields).VALUES(*args)
+        q = q.UPDATE(self.model_name).SET(
+            **instance.value_fields_dict).WHERE(id=instance.id)
         query = str(q)
-        self.conn.create(query, *args)
+        self.conn.update(query)
+
+    def _new(self, field_dict: dict) -> None:
+        q = Query()
+        q = q.INSERT(self.model.model_name, *field_dict.keys()).VALUES(*field_dict.values())
+        query = str(q)
+        self.conn.create(query, *field_dict.values())
 
 
 
