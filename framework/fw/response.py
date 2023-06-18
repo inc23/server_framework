@@ -27,6 +27,5 @@ class Response:
         })
 
     def _set_body(self, body) -> None:
-        print(body.encode())
         self.body = body.encode('utf-8')
         self.headers.update({"Content-Length": str(len(self.body))})

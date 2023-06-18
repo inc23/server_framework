@@ -18,10 +18,41 @@
     <button type="submit">send</button>
 </form>
 
-
+<br>
+{% if some_bool %}
+YAHOOOO!
+{% endif %}
+<br>
 {% for i in lst %}
 <br>
-{{ i }}
-{% endblock %}
+
+{% if some_bool %}
+<br>
+YAHOOOO!
+<br>
+{% endif %}
+
+{% if i.one %}
+one: {{ i.one }}
+{% endif %}
+
+{% if i.two %}
+two: {{ i.two }}
+{% endif %}
+
+{% endfor %}
+<br>
+-------------------------------------------
+{% for k in lst2 %}
+<br>
+one: {{ k.one }} two: {{ k.two }}
+{% endfor %}
+<br>
+-------------------------------------------
+{% for i in lst3 %}
+<br>
+one: {{ i }}
+{% endfor %}
+
 </body>
 </html>

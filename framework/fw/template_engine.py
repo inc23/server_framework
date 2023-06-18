@@ -1,12 +1,18 @@
 import os
 import re
-
 from framework.fw.request import Request
 
 FOR_BLOCK_PATTERN = re.compile(
-    r'{% for (?P<variable>[a-zA-Z]+) in (?P<seq>[a-zA-Z]+) %}(?P<content>[\S\s]+)(?={% endblock %}){% endblock %}')
-VARIABLE_PATTERN = re.compile(r'{{ (?P<variable>[a-zA-Z_]+) }}')
+    r'{% for (?P<variable>[a-zA-Z0-9_]+) in (?P<seq>[a-zA-Z0-9_]+) %}(?P<content>[\S\s]+?){% endfor %}'
+)
+IF_BLOCK_PATTERN = re.compile(
+    r'{% if (?P<variable>[a-zA-Z0-9_.]+) %}(?P<content>[\S\s]+?){% endif %}'
+)
+VARIABLE_PATTERN = re.compile(r'{{ (?P<variable>[a-zA-Z0-9_.]+) }}')
 
+# if_blocks = IF_BLOCK_PATTERN.finditer(for_block.group('content'))
+# if if_blocks is not None:
+#     for if_block in if_blocks:
 
 class Engine:
 
@@ -21,33 +27,119 @@ class Engine:
             return file.read()
 
     @staticmethod
-    def _build_block(context: dict, raw_template: str) -> str:
+    def _resolve_variable(context: dict, var: str) -> str:
+        split_var = var.split('.')
+        if len(split_var) == 2:
+            var, attr = split_var
+            var = getattr(context.get(var, ''), attr)
+        else:
+            var = context.get(var, '')
+        return var
+
+    def _build_block(self, context: dict, raw_template: str) -> str:
         used_var = VARIABLE_PATTERN.findall(raw_template)
         if used_var is None:
             return raw_template
         for var in used_var:
             var_in_template = '{{ %s }}' % var
-            raw_template = re.sub(var_in_template, str(context.get(var, '')), raw_template)
+            var = self._resolve_variable(context, var)
+            raw_template = re.sub(var_in_template, str(var), raw_template, count=1)
         return raw_template
 
     def _build_block_for(self, context: dict, raw_template: str) -> str:
-        for_block = FOR_BLOCK_PATTERN.search(raw_template)
-        if for_block is None:
+        for_blocks = FOR_BLOCK_PATTERN.finditer(raw_template)
+        if for_blocks is None:
             return raw_template
-        build_for = ''
-        for i in context.get(for_block.group('seq'), []):
-            build_for += self._build_block(
-                {for_block.group('variable'): i},
-                for_block.group('content')
-            )
-        template = FOR_BLOCK_PATTERN.sub(build_for, raw_template)
-        return template
+        for for_block in for_blocks:
+            build_for = ''
+            for i in context.get(for_block.group('seq'), []):
+                context_for_block = {for_block.group('variable'): i}
+                content_with_ifs = self._build_block_if(context_for_block, for_block.group('content'))
+                build_for += self._build_block(context_for_block, content_with_ifs)
+            raw_template = FOR_BLOCK_PATTERN.sub(build_for, raw_template, count=1)
+        return raw_template
+
+    def _build_block_if(self, context: dict, raw_template: str) -> str:
+        if_blocks = IF_BLOCK_PATTERN.finditer(raw_template)
+        if if_blocks is None:
+            return raw_template
+        for if_block in if_blocks:
+            var = self._resolve_variable(context, if_block.group('variable'))
+            if var:
+                raw_template = IF_BLOCK_PATTERN.sub(if_block.group('content'), raw_template, count=1)
+            else:
+                raw_template = IF_BLOCK_PATTERN.sub('', raw_template, count=1)
+        return raw_template
 
     def build(self, context: dict, template_name: str) -> str:
         raw_template = self._get_template_as_string(template_name)
-        raw_template = self._build_block_for(context, raw_template)
-        template = self._build_block(context, raw_template)
+        template = self._build_block_for(context, raw_template)
+        template = self._build_block_if(context, template)
+        template = self._build_block(context, template)
         return template
+
+
+
+# class Engine:
+#
+#     def __init__(self, base_dir: str, template_dir: str):
+#         self.template_dir_path = os.path.join(base_dir, template_dir)
+#
+#     def _get_template_as_string(self, template_name: str) -> str:
+#         template_path = os.path.join(self.template_dir_path, template_name)
+#         if not os.path.isfile(template_path):
+#             raise Exception('template is not file')
+#         with open(template_path, encoding='utf-8') as file:
+#             return file.read()
+#
+#     @staticmethod
+#     def _resolve_variable(context: dict, var: str) -> str:
+#         split_var = var.split('.')
+#         if len(split_var) == 2:
+#             var, attr = split_var
+#             var = getattr(context.get(var, ''), attr)
+#         else:
+#             var = context.get(var, '')
+#         return var
+#
+#     def _build_block(self, context: dict, raw_template: str) -> str:
+#         used_var = VARIABLE_PATTERN.findall(raw_template)
+#         if used_var is None:
+#             return raw_template
+#         for var in used_var:
+#             var_in_template = '{{ %s }}' % var
+#             var = self._resolve_variable(context, var)
+#             raw_template = re.sub(var_in_template, str(var), raw_template, count=1)
+#         return raw_template
+#
+#     def _build_block_for(self, context: dict, raw_template: str) -> str:
+#         for_blocks = FOR_BLOCK_PATTERN.finditer(raw_template)
+#         if for_blocks is None:
+#             return raw_template
+#         for for_block in for_blocks:
+#             build_for = ''
+#             for i in context.get(for_block.group('seq'), []):
+#                 build_for += self._build_block(
+#                     {for_block.group('variable'): i},
+#                     for_block.group('content')
+#                 )
+#             print(build_for)
+#             raw_template = FOR_BLOCK_PATTERN.sub(build_for, raw_template, count=1)
+#         return raw_template
+#
+#     def _build_block_if(self, context: dict, raw_template: str) -> str:
+#         if_blocks = IF_BLOCK_PATTERN.finditer(raw_template)
+#         # for if_block in if_blocks:
+#             # print(if_block.group('variable'))
+#             # print((if_block.group('content')))
+#         return ''
+#
+#     def build(self, context: dict, template_name: str) -> str:
+#         raw_template = self._get_template_as_string(template_name)
+#         template = self._build_block_for(context, raw_template)
+#         self._build_block_if(context, raw_template)
+#         template = self._build_block(context, template)
+#         return template
 
 
 def build_template(request: Request, context: dict, template_name: str) -> str:

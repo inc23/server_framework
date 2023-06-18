@@ -1,7 +1,26 @@
+from dataclasses import dataclass
 from datetime import datetime
 from .fw.view import View, Request
 from .fw.response import Response
 from .fw.template_engine import build_template
+
+@dataclass
+class Data:
+    one: int | None
+    two: int
+
+
+data = []
+for i in range(10):
+    if i % 2:
+        data.append(Data(i, i*10))
+    else:
+        data.append(Data(None, i))
+
+data2 = []
+for i in range(10):
+    data2.append(Data(i*100, i*1000))
+
 
 
 class Home(View):
@@ -9,7 +28,8 @@ class Home(View):
     def get(self, request: Request, *args, **kwargs) -> Response:
         body = build_template(
             request,
-            {'time': str(datetime.utcnow()), 'lst': range(10), 'session_id': request.session_id},
+            {'time': str(datetime.utcnow()), 'lst': data, 'lst2': data2,
+             'lst3': range(10), 'some_bool': None, 'session_id': request.session_id},
             'home.html'
         )
         return Response(request, body=body)

@@ -27,12 +27,6 @@ a = OneTable()
 a.one = 100000
 # a.two = 2
 a.save()
-print(
-    type(
-        ((OneTable.one == 1) & (
-            OneTable.two == 2)) | (
-                (OneTable.one == 1) & (
-                    OneTable.two == 2))))
 
 a = OneTable.objects.filter(
     ((OneTable.one == 50000) & (
@@ -42,17 +36,4 @@ a = OneTable.objects.filter(
 for i in a:
     print(f"{i=}, {i.one=} {i.two=}")
 
-a = OneTable.one == 1
-b = OneTable.two == 2
-# print(type(a))
-
-
-class A:
-
-    def __and__(self, other):
-        return f'and  {other}'
-
-
-a = A()
-
-print(a & 'h')
+b = OneTable.objects.filter()

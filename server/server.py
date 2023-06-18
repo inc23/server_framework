@@ -41,7 +41,6 @@ class Server:
                     environ = Environ(request).get_environ()
                     body = self.framework(environ, resp.start_response)
                     response = resp.create_response(body=body)
-                    print(response)
                 else:
                     response = '404'.encode('utf-8')
                 self.client_socket.send(response)
