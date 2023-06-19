@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HomePage</title>
+    <style>
+        body {
+            background-color: #283d83;
+        }
+    </style>
+</head>
+<body>
+<br>
+
+<H1> {{ text }} </H1>
+
+{% if unlogin %}
+<form method="post">
+    <input name="email"> e-mail <br>
+    <input name="password"> password <br>
+    <button type="submit">login</button>
+</form>
+{% endif %}
+
+
+</body>
+</html>

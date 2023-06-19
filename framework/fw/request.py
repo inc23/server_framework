@@ -2,6 +2,16 @@ from urllib.parse import parse_qs
 from typing import AnyStr, Any
 
 
+class Dict(dict):
+
+    def __getitem__(self, item):
+        try:
+            result = super(Dict, self).__getitem__(item)
+        except KeyError:
+            return False
+        return result[0]
+
+
 class Request:
 
     def __init__(self, environ: dict, settings: dict):
@@ -15,7 +25,7 @@ class Request:
         return self.extra.get(item)
 
     def _build_get_dict(self, param: str) -> None:
-        self.GET = parse_qs(param)
+        self.GET = Dict(parse_qs(param))
 
     def _build_post_dict(self, param: AnyStr) -> None:
-        self.POST = parse_qs(param)
+        self.POST = Dict(parse_qs(param))

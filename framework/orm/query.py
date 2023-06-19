@@ -144,7 +144,7 @@ class Where(BaseExp):
         if expression is None:
             self.q = Q(exp, **kwargs)
         else:
-            self.q = str(expression)[1:-1]
+            self.q = str(expression)
 
     def line(self) -> str:
         return str(self.q)

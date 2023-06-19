@@ -1,6 +1,6 @@
 import re
 from typing import Any, Callable
-from .security import get_password_hash
+from framework.auth.security import get_password_hash
 from datetime import datetime
 
 
@@ -23,20 +23,28 @@ class FieldBase:
         self.name = name
         self.owner = owner
 
+    def _create_expression(self, other, exp):
+        if isinstance(other, str):
+            other = f"'{other}'"
+        elif other is None:
+            other = 'Null'
+            exp = 'IS'
+        return Expression(f'{self.name} {exp} {other}')
+
     def __eq__(self, other) -> Expression:
-        return Expression(f'{self.name} = {other}')
+        return self._create_expression(other, '=')
 
     def __le__(self, other) -> Expression:
-        return Expression(f'{self.name} <= {other}')
+        return self._create_expression(other, '<=')
 
     def __lt__(self, other) -> Expression:
-        return Expression(f'{self.name} < {other}')
+        return self._create_expression(other, '<')
 
     def __ge__(self, other) -> Expression:
-        return Expression(f'{self.name} >= {other}')
+        return self._create_expression(other, '>=')
 
     def __gt__(self, other) -> Expression:
-        return Expression(f'{self.name} > {other}')
+        return self._create_expression(other, '>')
 
 
 class Field(FieldBase):
@@ -64,12 +72,13 @@ class Field(FieldBase):
 
     def _type_check(self, obj, value):
         if not isinstance(value, self.check_type):
-            try:
-                value = self.check_type(value)
-            except TypeError:
-                raise ValueError(
-                    f'field {self.name} in {obj.model_name} have to be {self.check_type.__qualname__}'
-                    f' but got {type(value)}')
+            if not self.nullable:
+                try:
+                    value = self.check_type(value)
+                except TypeError:
+                    raise ValueError(
+                        f'field {self.name} in {obj.model_name} have to be {self.check_type.__qualname__}'
+                        f' but got {type(value)}')
         return value
 
     def __set__(self, obj, value) -> None:
@@ -118,12 +127,16 @@ class FloatField(Field):
 
 class PasswordField(Field):
     type = 'TEXT'
+    check_type = str
 
     def __set__(self, obj, value) -> None:
         value = self._type_check(obj, value)
         if len(value) < 6:
             raise Exception('password is to short')
-        obj.value_fields_dict[self.name] = get_password_hash(value)
+        if '$2b$12$' in value:
+            obj.value_fields_dict[self.name] = value
+        else:
+            obj.value_fields_dict[self.name] = get_password_hash(value)
 
 
 class EmailField(TextField):
@@ -162,21 +175,22 @@ class DateField(Field):
         return time
 
 
-class BoolField(TextField):
-    type = 'REAL'
+class BoolField(IntField):
 
     def __set__(self, obj, value: bool = False) -> None:
         if isinstance(value, bool):
             if value:
-                obj.value_fields_dict[self.name] = 'TRUE'
+                obj.value_fields_dict[self.name] = 1
             else:
-                obj.value_fields_dict[self.name] = 'FALSE'
+                obj.value_fields_dict[self.name] = 0
+        if value == 0 or value == 1:
+            obj.value_fields_dict[self.name] = value
         else:
             raise TypeError(f'boolean field should be bool but got {type(value)}')
 
     def __get__(self, obj, owner):
         if obj is None:
             return self
-        if obj.value_fields_dict[self.name] == 'TRUE':
+        if obj.value_fields_dict[self.name] == 1:
             return True
         return False
