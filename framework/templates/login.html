@@ -12,15 +12,17 @@
 <body>
 <br>
 
-<H1> {{ text }} </H1>
 
-{% if unlogin %}
+
+{% if user %}
+<H1> Welcome {{ user }} </H1>
+{% endif %}
 <form method="post">
     <input name="email"> e-mail <br>
     <input name="password"> password <br>
     <button type="submit">login</button>
 </form>
-{% endif %}
+
 
 
 </body>

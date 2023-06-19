@@ -1,4 +1,3 @@
-import inspect
 import re
 from typing import Any, Callable
 from framework.auth.security import get_password_hash
@@ -61,15 +60,18 @@ class Field(FieldBase):
     ):
         self.nullable = nullable
         self.defaults = defaults
-        if foreign_key is not None:
-            model, field = foreign_key.split('.')
+        self.foreign_key = foreign_key
+        self.unique = unique
+
+    def get_line(self):
+        if self.foreign_key is not None:
+            model, field = self.foreign_key.split('.')
             self.foreign_key = f'{model}({field})'
-        else:
-            self.foreign_key = None
         if not self.nullable:
             self.type += ' NOT NULL'
-        if unique:
+        if self.unique:
             self.type += ' UNIQUE'
+        return self.type
 
     def _type_check(self, obj, value):
         if not isinstance(value, self.check_type):
@@ -131,15 +133,13 @@ class PasswordField(Field):
     check_type = str
 
     def __set__(self, obj, value) -> None:
-        stack = inspect.stack()
-        who_call = stack[1][3]
-        if who_call == '_fetch':
-            obj.value_fields_dict[self.name] = value
-        else:
-            value = self._type_check(obj, value)
+        value = self._type_check(obj, value)
+        if obj.new_instance:
             if len(value) < 6:
                 raise Exception('password is to short')
             obj.value_fields_dict[self.name] = get_password_hash(value)
+        else:
+            obj.value_fields_dict[self.name] = value
 
 
 class EmailField(TextField):

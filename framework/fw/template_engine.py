@@ -76,9 +76,12 @@ class Engine:
         return template
 
 
-def build_template(request: Request, context: dict, template_name: str) -> str:
+def build_template(request: Request, context: dict = None, template_name: str = '') -> str:
     engine = Engine(
         request.settings.get('BASE_DIR'),
         request.settings.get('TEMPLATES_DIR')
     )
+    if context is None:
+        context = dict()
+    context.update({'user': request.user})
     return engine.build(context, template_name)

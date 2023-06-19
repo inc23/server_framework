@@ -38,6 +38,7 @@ class CreateTable:
         conn = connector.get_connector()
         cursor = conn.cursor()
         for query in self._create_query():
+            print(query)
             cursor.execute(query)
             conn.commit()
 
@@ -58,7 +59,7 @@ class CreateTable:
     @staticmethod
     def _create_line(field: dict) -> Generator:
         for name, field in field.items():
-            line = f'{name} {field.type}'
+            line = f'{name} {field.get_line()}'
             yield line
 
     @staticmethod

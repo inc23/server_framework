@@ -32,18 +32,6 @@ def create_jwt_token(header: dict, payload: dict) -> str:
     return jwt
 
 
-# Полезная нагрузка (включает информацию, которую мы хотим передать)
-payload_jwt = {
-    'id': '1234567890',
-    'name': 'John Doe',
-    'admin': True
-}
-
-
-jwt_t = create_jwt_token(header_jwt, payload_jwt)
-print(jwt_t)
-
-
 def check_jwt(received_jwt: str) -> dict | bool:
 
     header_encoded, payload_encoded, signature = received_jwt.split('.')
@@ -53,6 +41,3 @@ def check_jwt(received_jwt: str) -> dict | bool:
         payload = json.loads(payload_decoded.decode())
         return payload
     return False
-
-
-print(check_jwt(jwt_t))

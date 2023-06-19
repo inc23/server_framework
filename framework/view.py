@@ -5,6 +5,7 @@ from .fw.response import Response
 from .fw.template_engine import build_template
 from .model import User
 from .auth.security import verify_password
+from .auth.auth import authenticate, login
 
 
 @dataclass
@@ -69,22 +70,20 @@ class Get(View):
 class Login(View):
 
     def get(self, request: Request, *args, **kwargs):
+        context = {}
         body = build_template(
-            request, {'text': 'login', 'unlogin': True}, 'login.html'
+            request, context, 'login.html'
         )
         return Response(request, body=body)
 
     def post(self, request: Request, *args, **kwargs):
         email = request.POST['email']
         password = request.POST['password']
-        user = User.objects.filter(User.email == email).all()
+        user = authenticate(email, password)
         if user:
-            user = user[0]
-            print(user.password)
-            if verify_password(password, user.password):
-                context = {'text': f'welcome {user.name}', 'unlogin': False}
-            else:
-                context = {'text': f'wrong', 'unlogin': True}
+            login(request, user)
+            context = {'text': f'welcome {user}', 'unlogin': False}
+            print(request.user)
         else:
             context = {'text': f'wrong', 'unlogin': True}
         body = build_template(

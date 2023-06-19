@@ -11,11 +11,18 @@ class User(BaseModel):
     created_at = DateField(defaults=datetime.utcnow)
     is_admin = BoolField()
 
+    def __str__(self):
+        return f'{self.name} {self.last_name}'
+
 
 class OneTable(BaseModel):
     one = FloatField(defaults=100000000000)
     two = IntField(nullable=True)
     date = DateField(defaults=datetime.utcnow)
+
+
+class TwoTable(BaseModel):
+    one = IntField(foreign_key='onetable.id')
 
 
 # MetaModel.create_tables()
