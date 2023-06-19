@@ -46,8 +46,9 @@ class Field(FieldBase):
     def __init__(
             self,
             foreign_key: None | str = None,
-            nullable: bool = True,
-            defaults: Any = None
+            nullable: bool = False,
+            defaults: Any = None,
+            unique: bool = False
     ):
         self.nullable = nullable
         self.defaults = defaults
@@ -56,33 +57,39 @@ class Field(FieldBase):
             self.foreign_key = f'{model}({field})'
         else:
             self.foreign_key = None
+        if not self.nullable:
+            self.type += ' NOT NULL'
+        if unique:
+            self.type += ' UNIQUE'
+
+    def _type_check(self, obj, value):
+        if not isinstance(value, self.check_type):
+            try:
+                value = self.check_type(value)
+            except TypeError:
+                raise ValueError(
+                    f'field {self.name} in {obj.model_name} have to be {self.check_type.__qualname__}'
+                    f' but got {type(value)}')
+        return value
 
     def __set__(self, obj, value) -> None:
-        if value is not None:
-            if not isinstance(value, self.check_type):
-                try:
-                    value = self.check_type(value)
-                except TypeError:
-                    raise ValueError(
-                        f'field {self.name} in {obj.model_name} have to be {self.check_type.__qualname__}'
-                        f' but got {type(value)}')
-        else:
-            if not self.nullable:
-                raise ValueError('this field cant bu null')
+        value = self._type_check(obj, value)
         obj.value_fields_dict[self.name] = value
 
     def __get__(self, obj, owner):
-        if obj is not None:
-            if not obj.value_fields_dict.get(self.name, False):
-                if self.defaults is not None:
-                    if isinstance(self.defaults, Callable):
-                        obj.value_fields_dict[self.name] = self.defaults()
-                    else:
-                        obj.value_fields_dict[self.name] = self.defaults
-                elif self.nullable:
-                    obj.value_fields_dict[self.name] = None
-            return obj.value_fields_dict[self.name]
-        return self
+        if obj is None:
+            return self
+        if not obj.value_fields_dict.get(self.name, False):
+            if self.defaults is not None:
+                if isinstance(self.defaults, Callable):
+                    obj.value_fields_dict[self.name] = self.defaults()
+                else:
+                    obj.value_fields_dict[self.name] = self.defaults
+            elif self.nullable:
+                obj.value_fields_dict[self.name] = None
+            else:
+                raise ValueError(f'field {obj.__class__.__qualname__}.{self.name} cant be null')
+        return obj.value_fields_dict[self.name]
 
 
 class IdField(Field):
@@ -113,13 +120,7 @@ class PasswordField(Field):
     type = 'TEXT'
 
     def __set__(self, obj, value) -> None:
-        if not isinstance(value, str):
-            try:
-                value = self.check_type(value)
-            except TypeError:
-                raise ValueError(
-                    f'field {self.name} in {obj.model_name} have to be str'
-                    f' but got {type(value)}')
+        value = self._type_check(obj, value)
         if len(value) < 6:
             raise Exception('password is to short')
         obj.value_fields_dict[self.name] = get_password_hash(value)
@@ -127,14 +128,8 @@ class PasswordField(Field):
 
 class EmailField(TextField):
 
-    def __set__(self, obj, value):
-        if not isinstance(value, str) and not self.nullable:
-            try:
-                value = self.check_type(value)
-            except TypeError:
-                raise ValueError(
-                    f'field {self.name} in {obj.model_name} have to be str'
-                    f' but got {type(value)}')
+    def __set__(self, obj, value) -> None:
+        value = self._type_check(obj, value)
         pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
         match = re.match(pattern, value)
         if match:
@@ -159,7 +154,29 @@ class DateField(Field):
                     f' but got {type(value)}')
 
     def __get__(self, obj, owner):
+        if obj is None:
+            return self
         time = super(DateField, self).__get__(obj, owner)
         if isinstance(time, datetime):
             obj.value_fields_dict[self.name] = datetime.timestamp(time)
         return time
+
+
+class BoolField(TextField):
+    type = 'REAL'
+
+    def __set__(self, obj, value: bool = False) -> None:
+        if isinstance(value, bool):
+            if value:
+                obj.value_fields_dict[self.name] = 'TRUE'
+            else:
+                obj.value_fields_dict[self.name] = 'FALSE'
+        else:
+            raise TypeError(f'boolean field should be bool but got {type(value)}')
+
+    def __get__(self, obj, owner):
+        if obj is None:
+            return self
+        if obj.value_fields_dict[self.name] == 'TRUE':
+            return True
+        return False
