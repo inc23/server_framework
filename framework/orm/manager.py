@@ -21,6 +21,7 @@ class Manager:
             model = self.model(new_instance=False)
             for field, val in zip(self.fields, row):
                 setattr(model, field, val)
+                print(field, val)
             result.append(model)
         return result
 

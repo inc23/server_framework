@@ -21,22 +21,22 @@ class OneTable(BaseModel):
 # MetaModel.create_tables()
 #
 #
-# user = User()
-# user.name = 'Ihor'
-# user.last_name = 'Petrichenko'
-# user.email = 'p@ukr.net'
-# user.password = '230588'
-# user.is_admin = True
+user = User()
+user.name = 'Ihor'
+user.last_name = 'Petrichenko'
+user.email = 'p@ukr.net'
+user.password = '230588'
+user.is_admin = True
+
+user.save()
+
+
+# a = OneTable.objects.filter(
+#     ((OneTable.one == 20) | (OneTable.one == 200)) | ((OneTable.one == 1110) | (OneTable.one < -100))).all()
+# print(a)
 #
-# user.save()
-
-
-a = OneTable.objects.filter(
-    ((OneTable.one == 20) | (OneTable.one == 200)) | ((OneTable.one == 1110) | (OneTable.one < -100))).all()
-print(a)
-
-b = OneTable.objects.get(id=1)
-print(b.two)
-
-a = OneTable.objects.filter(OneTable.two == None).all()
-print(a)
+# b = OneTable.objects.get(id=1)
+# print(b.two)
+#
+# a = OneTable.objects.filter(OneTable.two == None).all()
+# print(a)

@@ -1,3 +1,4 @@
+import inspect
 import re
 from typing import Any, Callable
 from framework.auth.security import get_password_hash
@@ -130,12 +131,14 @@ class PasswordField(Field):
     check_type = str
 
     def __set__(self, obj, value) -> None:
-        value = self._type_check(obj, value)
-        if len(value) < 6:
-            raise Exception('password is to short')
-        if '$2b$12$' in value:
+        stack = inspect.stack()
+        who_call = stack[1][3]
+        if who_call == '_fetch':
             obj.value_fields_dict[self.name] = value
         else:
+            value = self._type_check(obj, value)
+            if len(value) < 6:
+                raise Exception('password is to short')
             obj.value_fields_dict[self.name] = get_password_hash(value)
 
 

@@ -75,11 +75,12 @@ class Login(View):
         return Response(request, body=body)
 
     def post(self, request: Request, *args, **kwargs):
-        email = request.POST['emaill']
+        email = request.POST['email']
         password = request.POST['password']
         user = User.objects.filter(User.email == email).all()
         if user:
             user = user[0]
+            print(user.password)
             if verify_password(password, user.password):
                 context = {'text': f'welcome {user.name}', 'unlogin': False}
             else:
