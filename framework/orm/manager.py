@@ -21,7 +21,6 @@ class Manager:
             model = self.model(new_instance=False)
             for field, val in zip(self.fields, row):
                 setattr(model, field, val)
-                print(field, val)
             result.append(model)
         return result
 
@@ -33,8 +32,8 @@ class Manager:
     def all(self):
         return self._fetch()
 
-    def get(self, **kwargs):
-        self.filter(**kwargs)
+    def get(self, expression: Expression = None, **kwargs):
+        self.filter(expression, **kwargs)
         result = self._fetch()[0]
         return result
 
