@@ -12,14 +12,11 @@
 <body>
 <br>
 
+{% if user %}
+<H1> Welcome {{ user }} </H1>
+{% else %}
 
-
-{% if a %}
-<H1> Welcome </H1>
-{% endif %}
-
-
-{% if b %}
+<H1> You have to login </H1>
 <form method="post">
     <input name="email"> e-mail <br>
     <input name="password"> password <br>
@@ -44,7 +41,13 @@ ELSE_BLOCK: {{ k }}
 {% endif %}
 {% endfor %}
 
-
+{% if a == 1 %}
+IF_BLOCK {{ a }}
+<br>
+{% elif a %}
+GOOOOODDD
+<br>
+{% endif %}
 
 
 </body>

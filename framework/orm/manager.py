@@ -1,3 +1,4 @@
+import framework.settings
 from .connector import connector
 from .field import Expression
 from .query import Query
@@ -15,6 +16,9 @@ class Manager:
 
     def _fetch(self):
         query = str(self.q)
+        print(framework.settings.echo_sql)
+        if framework.settings.echo_sql:
+            print(self.q)
         db_result = self.conn.fetch(query)
         result = []
         for row in db_result:
@@ -26,7 +30,6 @@ class Manager:
 
     def filter(self, expression: Expression = None, **kwargs):
         self.q = self.q.WHERE(expression=expression, **kwargs)
-        print(self.q)
         return self
 
     def all(self):

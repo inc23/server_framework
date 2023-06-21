@@ -38,7 +38,6 @@ class CreateTable:
         conn = connector.get_connector()
         cursor = conn.cursor()
         for query in self._create_query():
-            print(query)
             cursor.execute(query)
             conn.commit()
 

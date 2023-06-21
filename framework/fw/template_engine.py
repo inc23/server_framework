@@ -50,7 +50,7 @@ class IfBlock:
     def _if_not_result(self):
         if not self.elif_blocks:
             if not self.else_block:
-                return 'not res'
+                return ''
             return self.else_block
         else:
             content = self.elif_blocks.pop(0)
@@ -83,10 +83,14 @@ class IfBlock:
             if else_blocks:
                 for else_block in else_blocks:
                     self.else_block = else_block.group('content')
-                    elif_else_contents = ELSE_BLOCK_PATTERN.sub('', elif_else_contents)
-        if elif_else_contents:
-            elif_else_contents = elif_else_contents.split('{% elif')
-            self.elif_blocks = ['{% elif' + else_content for else_content in elif_else_contents[1:]]
+                elif_contents = ELSE_BLOCK_PATTERN.sub('', elif_else_contents)
+            else:
+                elif_contents = elif_else_contents
+            elif_res = ELIF_BLOCK_PATTERN.finditer(elif_contents)
+            self.elif_blocks = []
+            for elif_re in elif_res:
+                self.elif_blocks.append(elif_re)
+                    # self.elif_blocks = ['{% elif' + else_content for else_content in elif_else_contents[1:]]
 
     def _resolve_variable(self, var: str):
         split_var = var.split('.')
@@ -167,14 +171,14 @@ class Engine:
             raw_template = FOR_BLOCK_PATTERN.sub(build_for, raw_template, count=1)
         return raw_template
 
-    def _build_block_if(self, context: dict, raw_template: str) -> str:
+    @staticmethod
+    def _build_block_if(context: dict, raw_template: str) -> str:
         if_blocks = IF_BLOCK_PATTERN.finditer(raw_template)
         if if_blocks is None:
             return raw_template
         for if_block in if_blocks:
             if_block_suber = IfBlock()
             if_block_suber = if_block_suber(context, if_block)
-            print(if_block_suber)
             raw_template = IF_BLOCK_PATTERN.sub(if_block_suber, raw_template, count=1)
         return raw_template
 
