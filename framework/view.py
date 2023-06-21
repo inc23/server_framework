@@ -18,8 +18,8 @@ data = []
 for i in range(10):
     if i % 2:
         data.append(Data(i, i * 10))
-    else:
-        data.append(Data(None, i))
+    # else:
+    #     data.append(Data(None, i))
 
 data2 = []
 for i in range(10):
@@ -70,7 +70,7 @@ class Get(View):
 class Login(View):
 
     def get(self, request: Request, *args, **kwargs):
-        context = {}
+        context = {'a': 'aaaaaaa', 'b': None, "lst": [1, 2, None, None, None]}
         body = build_template(
             request, context, 'login.html'
         )
@@ -88,5 +88,23 @@ class Login(View):
             context = {'text': f'wrong', 'unlogin': True}
         body = build_template(
             request, context, 'login.html'
+        )
+        return Response(request, body=body)
+
+class One:
+    a = 'bu'
+    b = False
+
+
+one = One()
+
+context = {'a': 'aaaaaaa', 'b': None, "lst": [1, 2, None, None, None], 'k': 'some', 'one': one}
+
+
+class Test(View):
+
+    def get(self, request: Request, *args, **kwargs):
+        body = build_template(
+            request, context, 'test.html'
         )
         return Response(request, body=body)

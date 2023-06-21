@@ -14,14 +14,36 @@
 
 
 
-{% if user %}
-<H1> Welcome {{ user }} </H1>
+{% if a %}
+<H1> Welcome </H1>
 {% endif %}
+
+
+{% if b %}
 <form method="post">
     <input name="email"> e-mail <br>
     <input name="password"> password <br>
     <button type="submit">login</button>
 </form>
+
+{% endif %}
+
+{% for k in lst %}
+{% if k %}
+OK: {{ k }}
+<br>
+{% elif a %}
+ELIF_BLOCK if a {{ a }}
+<br>
+{% elif a %}
+ELIF_BLOCK {{ a }}
+<br>
+{% else %}
+ELSE_BLOCK: {{ k }}
+<br>
+{% endif %}
+{% endfor %}
+
 
 
 

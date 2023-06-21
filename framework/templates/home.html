@@ -58,3 +58,32 @@ one: {{ i }}
 
 </body>
 </html>
+
+
+
+
+{% if b %}
+<form method="post">
+    <input name="email"> e-mail <br>
+    <input name="password"> password <br>
+    <button type="submit">login</button>
+</form>
+
+{% endif %}
+
+{% for k in lst %}
+<br>
+{% if k %}
+OK: {{ k }}
+<br>
+{% elif a %}
+ELIF_BLOCK if a {{ a }}
+<br>
+{% elif a %}
+ELIF_BLOCK {{ a }}
+<br>
+{% else %}
+ELSE_BLOCK: {{ k }}
+<br>
+{% endif %}
+{% endfor %}

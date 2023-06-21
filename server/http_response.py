@@ -13,6 +13,7 @@ class Response:
         code = str(status_code).encode('utf-8')
         status = http.HTTPStatus(status_code).phrase.encode()
         self.start_line = b'HTTP/1.1 ' + code + b' ' + status + b'\r\n'
+        print(headers)
         headers_list = [k.encode('utf-8') + b': ' + v.encode('utf-8') + b'\r\n' for k, v in headers]
         headers_list.append(b'Connection: close\r\n')
         self.headers = b''.join(headers_list)
