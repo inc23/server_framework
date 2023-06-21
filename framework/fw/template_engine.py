@@ -10,7 +10,8 @@ IF_BLOCK_PATTERN = re.compile(
 )
 
 ELIF_BLOCK_PATTERN = re.compile(
-    r'{% elif (?P<variable>[a-zA-Z0-9_.]+)( == (?P<eq>[\S\s]*?))? %}(?P<content>[\S\s]*)'
+    r'{% elif (?P<variable>[a-zA-Z0-9_.]+)( == (?P<eq>[\S\s]*?))? %}(?P<content>[\S\s]*?)(?={% e|$)'
+
 )
 
 ELSE_BLOCK_PATTERN = re.compile(
