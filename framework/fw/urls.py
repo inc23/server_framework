@@ -7,8 +7,9 @@ from .view import View, Page404
 class Url:
     url: str
     view: Type[View]
+    name: str
 
 
 start_urlpatterns = [
-    Url('^/404', Page404)
+    Url('^/404', Page404, '404')
 ]

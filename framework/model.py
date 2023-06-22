@@ -4,7 +4,7 @@ from framework.orm.field import FloatField, IntField, DateField, TextField, Pass
 
 
 class User(BaseModel):
-    name = TextField(nullable=False)
+    name = TextField(nullable=False, verbose_name='user field')
     last_name = TextField(nullable=False)
     password = PasswordField()
     email = EmailField(nullable=False, unique=True)
@@ -25,3 +25,5 @@ class TwoTable(BaseModel):
     one = IntField(foreign_key='onetable.id')
 
 
+for key in User.fields.values():
+    print(key.verbose_name)

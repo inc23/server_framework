@@ -1,3 +1,5 @@
+from typing import Any
+
 import framework.settings
 from .connector import connector
 from .field import Expression
@@ -14,7 +16,7 @@ class Manager:
         self.q = q.SELECT(*self.fields).FROM(self.model_name)
         self.conn = connector
 
-    def _fetch(self):
+    def _fetch(self) -> list:
         query = str(self.q)
         print(framework.settings.echo_sql)
         if framework.settings.echo_sql:
@@ -32,13 +34,15 @@ class Manager:
         self.q = self.q.WHERE(expression=expression, **kwargs)
         return self
 
-    def all(self):
+    def all(self) -> list:
         return self._fetch()
 
-    def get(self, expression: Expression = None, **kwargs):
+    def get(self, expression: Expression = None, **kwargs) -> Any:
         self.filter(expression, **kwargs)
-        result = self._fetch()[0]
-        return result
+        result = self._fetch()
+        if not result:
+            return None
+        return result[0]
 
     def save(self, fields_dict: dict = None, instance=None, ) -> None:
         for key in self.model.fields:
@@ -60,6 +64,3 @@ class Manager:
         q = q.INSERT(self.model.model_name, *field_dict.keys()).VALUES(*field_dict.values())
         query = str(q)
         self.conn.create(query, *field_dict.values())
-
-
-

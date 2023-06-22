@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <style>
+        body {
+            background-color: darkcyan;
+        }
+    </style>
+</head>
+<body>
+{% if user %}
+<H1>Hello, {{ user }}</H1>
+{% else %}
+<h1>Hello, you have to login</h1>
+{% endif %}
+<br>
+
+{{ model }} {{ model.id }}
+
+</body>
+</html>

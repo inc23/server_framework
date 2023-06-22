@@ -19,11 +19,28 @@ class Expression:
 
 
 class FieldBase:
+
+    def __init__(
+            self,
+            foreign_key: None | str = None,
+            nullable: bool = False,
+            defaults: Any = None,
+            unique: bool = False,
+            verbose_name: str = None
+    ):
+        self.nullable = nullable
+        self.defaults = defaults
+        self.foreign_key = foreign_key
+        self.unique = unique
+        self.verbose_name = verbose_name
+
     def __set_name__(self, owner, name):
         self.name = name
         self.owner = owner
+        if not self.verbose_name:
+            self.verbose_name = self.name
 
-    def _create_expression(self, other, exp):
+    def _create_expression(self, other, exp) -> Expression:
         if isinstance(other, str):
             other = f"'{other}'"
         elif other is None:
@@ -51,19 +68,7 @@ class Field(FieldBase):
     check_type = None
     type = None
 
-    def __init__(
-            self,
-            foreign_key: None | str = None,
-            nullable: bool = False,
-            defaults: Any = None,
-            unique: bool = False
-    ):
-        self.nullable = nullable
-        self.defaults = defaults
-        self.foreign_key = foreign_key
-        self.unique = unique
-
-    def get_line(self):
+    def get_line(self) -> str:
         if self.foreign_key is not None:
             model, field = self.foreign_key.split('.')
             self.foreign_key = f'{model}({field})'
@@ -73,7 +78,7 @@ class Field(FieldBase):
             self.type += ' UNIQUE'
         return self.type
 
-    def _type_check(self, obj, value):
+    def _type_check(self, obj, value) -> Any:
         if not isinstance(value, self.check_type):
             if not self.nullable:
                 try:
@@ -88,7 +93,7 @@ class Field(FieldBase):
         value = self._type_check(obj, value)
         obj.value_fields_dict[self.name] = value
 
-    def __get__(self, obj, owner):
+    def __get__(self, obj, owner) -> Any:
         if obj is None:
             return self
         if not obj.value_fields_dict.get(self.name, False):

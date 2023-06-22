@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HomePage</title>
+    <style>
+        body {
+            background-color: #283d83;
+        }
+    </style>
+</head>
+<body>
+<br>
+
+{% if user %}
+<H1> Welcome {{ user }} </H1>
+{% else %}
+
+<H1> You have to login </H1>
+<form method="post">
+    {{ form.id }}                               {{ form.id_label }}
+</form>
+
+{% endif %}
+
+{% for k in lst %}
+{% if k %}
+OK: {{ k }}
+<br>
+{% elif a %}
+ELIF_BLOCK if a {{ a }}
+<br>
+{% elif a %}
+ELIF_BLOCK {{ a }}
+<br>
+{% else %}
+ELSE_BLOCK: {{ k }}
+<br>
+{% endif %}
+{% endfor %}
+
+{% if a == 1 %}
+IF_BLOCK {{ a }}
+<br>
+{% elif a %}
+GOOOOODDD
+<br>
+{% endif %}
+
+
+</body>
+</html>

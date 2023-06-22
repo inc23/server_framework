@@ -4,7 +4,6 @@ from framework.fw.request import Request
 from framework.fw.view import View, Page404
 from .response import Response
 from .urls import Url, start_urlpatterns
-from .exception import MethodError
 from .middleware import Middleware
 from ..orm.base_model import MetaModel
 
@@ -54,9 +53,7 @@ class Framework:
     @staticmethod
     def _get_response(environ: dict, view: View, request: Request) -> Response:
         method = environ['REQUEST_METHOD'].lower()
-        if hasattr(view, method):
-            return getattr(view, method)(request)
-        raise MethodError
+        return view.run(method, request)
 
     def _to_response(self, response: Response) -> None:
         for middleware in self.middlewares:

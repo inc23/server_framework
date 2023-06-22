@@ -1,11 +1,11 @@
 from .fw.urls import Url
-from .view import Home, Hello, Get, Login, Test
+from .view import Login, Users, UserItem, UserCreate
 
 
 urlpatterns = [
-    Url('^$', Home),
-    Url('^/hello', Hello),
-    Url('^/get', Get),
-    Url('^/login', Login),
-    Url('^/test', Test)
+    Url('^/login', Login, 'login'),
+    Url('^/users', Users, 'users'),
+    Url('^/user', UserItem, 'user'),
+    Url('^/new', UserCreate, 'create_user')
 ]
+

@@ -1,5 +1,4 @@
 from typing import Any
-
 from .request import Request
 
 
@@ -23,7 +22,7 @@ class Response:
     def _set_headers(self) -> None:
         self.headers.update({
             'Content-type': 'text/html; charset=utf-8',
-            "Content-Length": 0
+            "Content-Length": '0'
         })
 
     def _set_body(self, body) -> None:

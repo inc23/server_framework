@@ -3,7 +3,7 @@ import re
 from framework.fw.request import Request
 
 FOR_BLOCK_PATTERN = re.compile(
-    r'{% for (?P<variable>[a-zA-Z0-9_]+) in (?P<seq>[a-zA-Z0-9_]+) %}(?P<content>[\S\s]+?){% endfor %}'
+    r'{% for (?P<variable>\w+) in (?P<seq>\w+) %}(?P<content>[\S\s]+?){% endfor %}'
 )
 IF_BLOCK_PATTERN = re.compile(
     r'{% if (?P<variable>[a-zA-Z0-9_.]+)( == (?P<eq>[\S\s]+?))? %}(?P<content>[\S\s]+?)((?={% el)(?P<else_content>[\S\s]+?))?{% endif %}'
@@ -35,8 +35,8 @@ class IfBlock:
         self.is_if_block = False
         self.is_else_block = False
 
-    def __call__(self, context, if_block, is_if_block: bool = True,
-                 elif_blocks: list | None = None, else_block: str | None = None):
+    def __call__(self, context, if_block: re, is_if_block: bool = True,
+                 elif_blocks: list | None = None, else_block: str | None = None) -> str:
         self.context = context
         self.if_block = if_block
         self.is_if_block = is_if_block
@@ -91,7 +91,6 @@ class IfBlock:
             self.elif_blocks = []
             for elif_re in elif_res:
                 self.elif_blocks.append(elif_re)
-                    # self.elif_blocks = ['{% elif' + else_content for else_content in elif_else_contents[1:]]
 
     def _resolve_variable(self, var: str):
         split_var = var.split('.')
