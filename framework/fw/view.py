@@ -12,8 +12,6 @@ def redirect(request: Request, view: str) -> Response:
     host = request.environ.get('HOST')
     url = None
     for path in urlpatterns:
-        print(view)
-        print(path.name)
         if path.name == view:
             url = path.url[2:]
             break
@@ -75,15 +73,20 @@ class DetailView(View):
 
 
 class CreateView(View):
-    form_class: Type[BaseModel]
+    form_class: Type[BaseForm]
     name_in_template: str = 'form'
+    redirect_page: str | None = None
 
     def get_context_data(self, **kwargs) -> dict:
         context = super(CreateView, self).get_context_data(**kwargs)
         context[self.name_in_template] = self.form_class()
         return context
 
-    # def post(self, request: Request, *args, **kwargs):
+    def post(self, request: Request, *args, **kwargs):
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            form.save()
+        return redirect(request, self.redirect_page)
 
 
 class Page404(View):

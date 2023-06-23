@@ -199,6 +199,9 @@ class BoolField(IntField):
     def __get__(self, obj, owner):
         if obj is None:
             return self
+        if obj.value_fields_dict.get(self.name) is None:
+            if self.defaults is not None:
+                setattr(obj, self.name, self.defaults)
         if obj.value_fields_dict[self.name] == 1:
             return True
         return False

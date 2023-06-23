@@ -34,3 +34,4 @@ class UserCreate(CreateView):
     form_class = UserCreateForm
     extra_context = {'title': 'create user'}
     template_name = 'create_user.html'
+    redirect_page = 'users'

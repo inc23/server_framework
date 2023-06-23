@@ -18,34 +18,12 @@
 
 <H1> You have to login </H1>
 <form method="post">
-    {{ form.id }}                               {{ form.id_label }}
+    {{ form.as_p }}
+    <button type="submit" style="margin: 20px 35px 10px 10px; width: auto">Створити</button><br>
 </form>
 
 {% endif %}
 
-{% for k in lst %}
-{% if k %}
-OK: {{ k }}
-<br>
-{% elif a %}
-ELIF_BLOCK if a {{ a }}
-<br>
-{% elif a %}
-ELIF_BLOCK {{ a }}
-<br>
-{% else %}
-ELSE_BLOCK: {{ k }}
-<br>
-{% endif %}
-{% endfor %}
-
-{% if a == 1 %}
-IF_BLOCK {{ a }}
-<br>
-{% elif a %}
-GOOOOODDD
-<br>
-{% endif %}
 
 
 </body>
