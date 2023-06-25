@@ -7,4 +7,6 @@ class UserCreateForm(BaseForm):
     include_field = ('name', 'last_name', 'password', 'email', 'is admin')
 
 
-f = UserCreateForm()
+class UserUpdateForm(BaseForm):
+    model_class = User
+    include_field = ('name', 'last_name', 'email', 'is admin')

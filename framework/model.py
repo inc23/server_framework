@@ -25,3 +25,4 @@ class TwoTable(BaseModel):
     one = IntField(foreign_key='onetable.id')
 
 
+

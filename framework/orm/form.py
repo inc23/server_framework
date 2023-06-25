@@ -7,15 +7,20 @@ class BaseForm:
     model_class: Type[BaseModel] | None = None
     include_field: tuple | str = 'all'
 
-    def __init__(self, post_dict: dict | None = None):
+    def __init__(self, obj: BaseModel | None = None):
+        self.post_resul_dict = dict()
         self.get_result_dict = dict()
+        self.obj = obj
+
+    def __call__(self, post_dict: dict | None = None):
         if post_dict is None:
             self._build_dict()
         else:
-            self.post_resul_dict = dict()
             self.post_dict = post_dict
             self._get_post_dict()
-            self.obj = self.model_class()
+            if not self.obj:
+                self.obj = self.model_class()
+        return self
 
     def _get_post_dict(self) -> None:
         for k, v in self.post_dict.items():
@@ -42,11 +47,11 @@ class BaseForm:
             self.include_field = self.model_class.fields.keys()
         for k, v in self.model_class.fields.items():
             if k in self.include_field:
-                text = f'<input name="{k}">'
+                if self.obj:
+                    text = f'<input name="{k}" value="{getattr(self.obj, k)}">'
+                else:
+                    text = f'<input name="{k}">'
                 self.get_result_dict.update({k: text, f'{k}_label': v.verbose_name})
-
-    # def __getattr__(self, item):
-    #     return self.result_dict[item]
 
     @property
     def as_p(self) -> str:

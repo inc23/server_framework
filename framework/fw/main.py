@@ -29,23 +29,24 @@ class Framework:
         return response.body
 
     @staticmethod
-    def _prepare_url(url: str) -> str:
-        if url[-1] == '/':
-            return url[:-1]
-        return url
+    def _prepare_url(url: str) -> tuple[str, str]:
+        url_param = url.split('/')
+        if len(url_param) == 3:
+            _, url, arg = url_param
+            return f'/{url}', arg
+        return url, ''
 
-    def _find_view(self, url: str) -> Type[View]:
-        url = self._prepare_url(url)
+    def _find_view(self, url: str) -> View:
+        url, arg = self._prepare_url(url)
         for path in self.urls:
-            m = re.match(path.url, url)
-            if m is not None:
-                return path.view
-        return Page404
+            if path.url == url:
+                return path.view(arg)
+        return Page404()
 
     def _get_view(self, environ: dict) -> View:
         url = environ['PATH_INFO']
         view = self._find_view(url)
-        return view()
+        return view
 
     def _get_request(self, environ: dict) -> Request:
         return Request(environ, self.settings)
@@ -53,6 +54,7 @@ class Framework:
     @staticmethod
     def _get_response(environ: dict, view: View, request: Request) -> Response:
         method = environ['REQUEST_METHOD'].lower()
+        print(view.__dict__)
         return view.run(method, request)
 
     def _to_response(self, response: Response) -> None:

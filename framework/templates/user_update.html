@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HomePage</title>
+    <style>
+        body {
+            background-color: #283d83;
+        }
+    </style>
+</head>
+<body>
+<br>
+
+{% if user %}
+<H1> Welcome {{ user }} </H1>
+{% else %}
+
+<H1> You have to login </H1>
+<form method="post">
+    {{ form.as_p }}
+    <button type="submit" style="margin: 20px 35px 10px 10px; width: auto">Створити</button><br>
+</form>
+
+{% endif %}
+
+
+
+</body>
+</html>

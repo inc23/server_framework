@@ -1,5 +1,5 @@
-from .form import UserCreateForm
-from .fw.view import View, Request, ListView, DetailView, redirect, CreateView
+from .form import UserCreateForm, UserUpdateForm
+from .fw.view import View, Request, ListView, DetailView, redirect, CreateView, UpdateView
 from .auth.auth import authenticate, login
 from .model import User
 
@@ -27,7 +27,6 @@ class UserItem(DetailView):
     model_class = User
     extra_context = {'title': 'user'}
     template_name = 'user.html'
-    instance_id = 20
 
 
 class UserCreate(CreateView):
@@ -35,3 +34,12 @@ class UserCreate(CreateView):
     extra_context = {'title': 'create user'}
     template_name = 'create_user.html'
     redirect_page = 'users'
+
+
+class UserUpdate(UpdateView):
+    form_class = UserUpdateForm
+    extra_context = {'title': 'create user'}
+    template_name = 'user_update.html'
+    redirect_page = 'users'
+
+

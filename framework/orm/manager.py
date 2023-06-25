@@ -18,7 +18,6 @@ class Manager:
 
     def _fetch(self) -> list:
         query = str(self.q)
-        print(framework.settings.echo_sql)
         if framework.settings.echo_sql:
             print(self.q)
         db_result = self.conn.fetch(query)
@@ -35,6 +34,8 @@ class Manager:
         return self
 
     def all(self) -> list:
+        q = Query()
+        self.q = q.SELECT(*self.fields).FROM(self.model_name)
         return self._fetch()
 
     def get(self, expression: Expression = None, **kwargs) -> Any:

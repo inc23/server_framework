@@ -13,7 +13,7 @@ def redirect(request: Request, view: str) -> Response:
     url = None
     for path in urlpatterns:
         if path.name == view:
-            url = path.url[2:]
+            url = path.url[1:]
             break
     if not url:
         url = '404'
@@ -25,7 +25,7 @@ class View:
     template_name: str | None = None
     extra_context: dict | None = None
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self.context = self.get_context_data()
         self.request = None
 
@@ -62,13 +62,16 @@ class ListView(View):
 
 class DetailView(View):
 
+    def __init__(self, instance_id):
+        self.id = instance_id
+        super(DetailView, self).__init__()
+
     model_class: Type[BaseModel]
-    instance_id: int | None = None
     name_in_template: str = 'model'
 
     def get_context_data(self, **kwargs) -> dict:
         context = super(DetailView, self).get_context_data(**kwargs)
-        context[self.name_in_template] = self.model_class.objects.get(self.model_class.id == self.instance_id)
+        context[self.name_in_template] = self.model_class.objects.get(self.model_class.id == self.id)
         return context
 
 
@@ -79,14 +82,49 @@ class CreateView(View):
 
     def get_context_data(self, **kwargs) -> dict:
         context = super(CreateView, self).get_context_data(**kwargs)
-        context[self.name_in_template] = self.form_class()
+        context[self.name_in_template] = self.get_form()
         return context
 
-    def post(self, request: Request, *args, **kwargs):
-        form = self.form_class(request.POST)
+    @property
+    def get_form(self):
+        form = self.form_class()
+        return form
+
+    def post(self, request: Request, *args, **kwargs) -> Response:
+        form = self.get_form(request.POST)
         if form.is_valid():
             form.save()
         return redirect(request, self.redirect_page)
+
+
+class UpdateView(CreateView):
+
+    def __init__(self, item_id):
+        self.id = int(item_id)
+        self.object = self.get_object()
+        super(UpdateView, self).__init__()
+
+    def get_context_data(self, **kwargs) -> dict:
+        context = super(CreateView, self).get_context_data(**kwargs)
+        context[self.name_in_template] = self.get_form()
+        return context
+
+    @property
+    def get_form(self):
+        form = self.form_class(obj=self.get_object())
+        print(self.get_object())
+        return form
+
+    def get_object(self):
+        class_object = self.form_class.model_class
+        obj = class_object.objects.get(class_object.id == self.id)
+        return obj
+
+    def post(self, request: Request, *args, **kwargs) -> Response:
+        form = self.get_form(request.POST)
+        if form.is_valid():
+            form.save()
+        return redirect(self.request, self.redirect_page)
 
 
 class Page404(View):
