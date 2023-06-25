@@ -27,7 +27,8 @@ class FieldBase:
             defaults: Any = None,
             unique: bool = False,
             verbose_name: str | None = None,
-            placeholder: str | None = None
+            placeholder: str | None = None,
+            choices: tuple | None = None
     ):
         self.nullable = nullable
         self.defaults = defaults
@@ -35,6 +36,7 @@ class FieldBase:
         self.unique = unique
         self.placeholder = placeholder
         self.verbose_name = verbose_name
+        self.choices = choices
 
     def __set_name__(self, owner, name):
         self.name = name
@@ -69,6 +71,7 @@ class FieldBase:
 class Field(FieldBase):
     check_type = None
     type = None
+    html_type = None
 
     def get_line(self) -> str:
         if self.foreign_key is not None:
@@ -114,16 +117,19 @@ class Field(FieldBase):
 class IdField(Field):
     type = 'INTEGER PRIMARY KEY AUTOINCREMENT'
     check_type = int | str
+    html_type = 'number'
 
 
 class IntField(Field):
     type = 'INTEGER'
     check_type = int
+    html_type = 'number'
 
 
 class TextField(Field):
     type = 'TEXT'
     check_type = str
+    html_type = 'text'
 
 
 class ImageField(TextField):
@@ -133,11 +139,13 @@ class ImageField(TextField):
 class FloatField(Field):
     type = 'REAL'
     check_type = float
+    html_type = 'number'
 
 
 class PasswordField(Field):
     type = 'TEXT'
     check_type = str
+    html_type = 'password'
 
     def __set__(self, obj, value) -> None:
         value = self._type_check(obj, value)
@@ -150,6 +158,7 @@ class PasswordField(Field):
 
 
 class EmailField(TextField):
+    html_type = 'email'
 
     def __set__(self, obj, value) -> None:
         value = self._type_check(obj, value)
@@ -163,6 +172,7 @@ class EmailField(TextField):
 
 class DateField(Field):
     type = 'REAL'
+    html_type = 'date'
 
     def __set__(self, obj, value: datetime) -> None:
         if self.defaults is not None:
@@ -186,6 +196,7 @@ class DateField(Field):
 
 
 class BoolField(IntField):
+    html_type = 'checkbox'
 
     def __set__(self, obj, value: bool = False) -> None:
         if isinstance(value, bool):

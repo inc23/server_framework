@@ -28,4 +28,5 @@ class Request:
         self.GET = Dict(parse_qs(param))
 
     def _build_post_dict(self, param: AnyStr) -> None:
+        print(param)
         self.POST = Dict(parse_qs(param))

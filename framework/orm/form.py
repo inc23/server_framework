@@ -11,6 +11,8 @@ class BaseForm:
         self.post_resul_dict = dict()
         self.get_result_dict = dict()
         self.obj = obj
+        if self.include_field == 'all':
+            self.include_field = self.model_class.fields.keys()
 
     def __call__(self, post_dict: dict | None = None):
         if post_dict is None:
@@ -27,38 +29,38 @@ class BaseForm:
             self.post_resul_dict.update({k: v[0]})
 
     def is_valid(self) -> bool:
-        print(self.post_resul_dict)
-        for k, v in self.post_resul_dict.items():
+        is_valid = True
+        for k in self.include_field:
             try:
-                print(f'{k} = {v}')
-                setattr(self.obj, k, v)
+                setattr(self.obj, k, self.post_resul_dict[k])
             except ValueError as e:
-                self.get_result_dict.update({f'{k}_label': f'<label for="{k}"> style="color: red;"> wrong value {k}</label>'})
+                is_valid = False
+                self.get_result_dict.update(
+                    {f'{k}_label': f'<label for="{k}" style="color: red;"> wrong {k} value </label>'})
                 print(e)
-                return False
-        return True
+            except KeyError as e:
+                is_valid = False
+                self.get_result_dict.update(
+                    {f'{k}_label': f'<label for="{k}" style="color: red;"> field {k} must be filled</label>'})
+                print(e)
+        return is_valid
 
     def save(self, commit: bool = True) -> None:
         if commit:
             self.obj.save()
 
     def _build_dict(self) -> None:
-        if self.include_field == 'all':
-            self.include_field = self.model_class.fields.keys()
         for k, v in self.model_class.fields.items():
             if k in self.include_field:
                 placeholder = f'placeholder="input {v.placeholder}"' if v.placeholder else ''
-                if self.obj:
-                    text = f'<input type="text" id="{k}" name="{k}" value="{getattr(self.obj, k)}" {placeholder}><br><br>'
-                else:
-                    text = f'<input type="text" id="{k}"  name="{k}" {placeholder}><br><br>'
+                value = str(getattr(self.obj, k)) if self.obj else ''
+                text = f'<input type="{v.html_type}" id="{k}" name="{k}" value="{value}" {placeholder}><br><br>'
                 self.get_result_dict.update(
                     {
                      f'{k}_label': f'<label for="{k}">{v.verbose_name}</label>',
-                        k: text
+                     k: text
                     }
                 )
-        print(self.get_result_dict)
 
     @property
     def as_p(self) -> str:

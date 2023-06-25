@@ -35,7 +35,6 @@ class View:
         return kwargs
 
     def get(self, request: Request, *args, **kwargs) -> Response:
-        self.request = request
         body = build_template(request, self.context, self.template_name)
         return Response(request=request, body=body)
 
@@ -48,6 +47,9 @@ class View:
             return getattr(self, method)(request)
         raise MethodError
 
+    def render_to_response(self, context):
+        body = build_template(self.request, context, self.template_name)
+        return Response(request=self.request, body=body)
 
 class ListView(View):
 
@@ -80,21 +82,31 @@ class CreateView(View):
     name_in_template: str = 'form'
     redirect_page: str | None = None
 
-    def get_context_data(self, **kwargs) -> dict:
+    def __init__(self, *args, **kwargs):
+        self.form = self.form_class()
+        super(CreateView, self).__init__(*args, **kwargs)
+
+    def get_context_data(self, form: BaseForm | None = None, **kwargs) -> dict:
         context = super(CreateView, self).get_context_data(**kwargs)
-        context[self.name_in_template] = self.get_form()
+        context[self.name_in_template] = form if form else self.form()
         return context
 
-    @property
-    def get_form(self):
-        form = self.form_class()
-        return form
-
     def post(self, request: Request, *args, **kwargs) -> Response:
-        form = self.get_form(request.POST)
+        form = self.form(request.POST)
+        print('______________________')
+        print(form.get_result_dict)
+        print('----------------------')
         if form.is_valid():
-            form.save()
-        return redirect(request, self.redirect_page)
+            return self.form_valid(form)
+        return self.form_invalid(form)
+
+    def form_valid(self, form) -> Response:
+        form.save()
+        return redirect(self.request, self.redirect_page)
+
+    def form_invalid(self, form: BaseForm) -> Response:
+        context = self.get_context_data(form=form)
+        return self.render_to_response(context)
 
 
 class UpdateView(CreateView):
