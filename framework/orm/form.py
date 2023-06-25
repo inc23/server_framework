@@ -28,12 +28,12 @@ class BaseForm:
 
     def is_valid(self) -> bool:
         print(self.post_resul_dict)
-        print(self.obj.fields)
         for k, v in self.post_resul_dict.items():
             try:
                 print(f'{k} = {v}')
                 setattr(self.obj, k, v)
             except ValueError as e:
+                self.get_result_dict.update({f'{k}_label': f'<label for="{k}"> style="color: red;"> wrong value {k}</label>'})
                 print(e)
                 return False
         return True
@@ -47,15 +47,22 @@ class BaseForm:
             self.include_field = self.model_class.fields.keys()
         for k, v in self.model_class.fields.items():
             if k in self.include_field:
+                placeholder = f'placeholder="input {v.placeholder}"' if v.placeholder else ''
                 if self.obj:
-                    text = f'<input name="{k}" value="{getattr(self.obj, k)}">'
+                    text = f'<input type="text" id="{k}" name="{k}" value="{getattr(self.obj, k)}" {placeholder}><br><br>'
                 else:
-                    text = f'<input name="{k}">'
-                self.get_result_dict.update({k: text, f'{k}_label': v.verbose_name})
+                    text = f'<input type="text" id="{k}"  name="{k}" {placeholder}><br><br>'
+                self.get_result_dict.update(
+                    {
+                     f'{k}_label': f'<label for="{k}">{v.verbose_name}</label>',
+                        k: text
+                    }
+                )
+        print(self.get_result_dict)
 
     @property
     def as_p(self) -> str:
-        return '<br><br>\r\n'.join(self.get_result_dict.values()) + '<br>'
+        return ''.join(self.get_result_dict.values()) + '<br>'
 
     def __setattr__(self, key, value):
         if key in self.include_field:

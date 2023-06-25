@@ -26,12 +26,14 @@ class FieldBase:
             nullable: bool = False,
             defaults: Any = None,
             unique: bool = False,
-            verbose_name: str = None
+            verbose_name: str | None = None,
+            placeholder: str | None = None
     ):
         self.nullable = nullable
         self.defaults = defaults
         self.foreign_key = foreign_key
         self.unique = unique
+        self.placeholder = placeholder
         self.verbose_name = verbose_name
 
     def __set_name__(self, owner, name):
@@ -46,7 +48,7 @@ class FieldBase:
         elif other is None:
             other = 'Null'
             exp = 'IS'
-        return Expression(f'{self.name} {exp} {other}')
+        return Expression(f'{self.owner.model_name}.{self.name} {exp} {other}')
 
     def __eq__(self, other) -> Expression:
         return self._create_expression(other, '=')
@@ -79,7 +81,7 @@ class Field(FieldBase):
         return self.type
 
     def _type_check(self, obj, value) -> Any:
-        if not isinstance(value, self.check_type):
+        if not isinstance(value, self.check_type) and not self.foreign_key:
             if not self.nullable:
                 try:
                     value = self.check_type(value)

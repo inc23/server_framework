@@ -1,20 +1,20 @@
-from typing import Any
-
+from typing import Any, Type
 import framework.settings
 from .connector import connector
 from .field import Expression
 from .query import Query
+from .base_model import MetaModel
 
 
 class Manager:
-
-    def __init__(self, model):
+    def __init__(self, model: MetaModel):
         self.model = model
         self.model_name = model.model_name
         self.fields = model.fields.keys()
         q = Query()
         self.q = q.SELECT(*self.fields).FROM(self.model_name)
         self.conn = connector
+        self.related_data: dict | None = None
 
     def _fetch(self) -> list:
         query = str(self.q)
@@ -26,6 +26,15 @@ class Manager:
             model = self.model(new_instance=False)
             for field, val in zip(self.fields, row):
                 setattr(model, field, val)
+            if self.related_data:
+                row = row[len(model.fields)-1:]
+                for k, v in self.related_data.items():
+                    model_rel = MetaModel.classes_dict[v[0]](new_instance=False)
+                    for field, val in zip(self.fields, row):
+                        setattr(model_rel, field, val)
+                    setattr(model, k, model_rel)
+                    row = row[len(model_rel.fields)-1:]
+                self.related_data = None
             result.append(model)
         return result
 
@@ -65,3 +74,21 @@ class Manager:
         q = q.INSERT(self.model.model_name, *field_dict.keys()).VALUES(*field_dict.values())
         query = str(q)
         self.conn.create(query, *field_dict.values())
+
+    def select_related(self, *args: str):
+        related_data = dict()
+        if args:
+            for k, v in self.model.related_fields.items():
+                if k in args:
+                    related_data.update({k: v})
+        else:
+            related_data = self.model.related_fields
+        related_models = []
+        for v in related_data.values():
+            related_models.append(f'{v[0]}.*')
+        q = Query()
+        self.q = q.SELECT(f'{self.model_name}.*', *related_models).FROM(self.model_name)
+        for model_field in related_data.items():
+            self.q.JOIN(self.model_name, model_field)
+        self.related_data = related_data
+        return self

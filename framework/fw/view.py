@@ -112,7 +112,6 @@ class UpdateView(CreateView):
     @property
     def get_form(self):
         form = self.form_class(obj=self.get_object())
-        print(self.get_object())
         return form
 
     def get_object(self):

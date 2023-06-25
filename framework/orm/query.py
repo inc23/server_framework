@@ -1,4 +1,4 @@
-from typing import Generator
+from typing import Generator, Dict, Tuple
 
 from framework.orm.field import Expression
 
@@ -64,7 +64,7 @@ class Select(BaseExp):
         self.data.extend(args)
 
     def line(self) -> str:
-        return ','.join(self.data)
+        return ', '.join(self.data)
 
     def __bool__(self):
         return bool(self.data)
@@ -80,7 +80,7 @@ class SelectD(BaseExp):
         self.data.extend(args)
 
     def line(self) -> str:
-        return ','.join(self.data)
+        return ', '.join(self.data)
 
     def __bool__(self):
         return bool(self.data)
@@ -96,7 +96,7 @@ class From(BaseExp):
         self.data.extend(args)
 
     def line(self) -> str:
-        return ','.join(self.data)
+        return ', '.join(self.data)
 
     def __bool__(self):
         return bool(self.data)
@@ -112,7 +112,7 @@ class Update(BaseExp):
         self.data.extend(args)
 
     def line(self) -> str:
-        return ','.join(self.data)
+        return ', '.join(self.data)
 
     def __bool__(self):
         return bool(self.data)
@@ -212,6 +212,30 @@ class Delete(BaseExp):
         return self.table
 
 
+class Join(BaseExp):
+    name = 'JOIN'
+    'JOIN onetable ON onetable.id = twotable.one2'
+
+    def __init__(self):
+        self.data = []
+
+    def add(self, table_name: str, related_tuple: Tuple[str, str]):
+        self.data.append((table_name, related_tuple))
+
+    def line(self):
+        for data in self.data:
+            table_name, related_list = data
+            field, foreign_table_field = related_list
+            foreign_table, foreign_field = foreign_table_field
+            yield f'{self.name}\n\t{foreign_table} ON {foreign_table}.{foreign_field} = {table_name}.{field}\n'
+
+    def definition(self):
+        return ''.join(self.line())
+
+    def __bool__(self):
+        return bool(self.data)
+
+
 class Query:
 
     def __init__(self):
@@ -222,6 +246,7 @@ class Query:
             'update': Update(),
             'set': Set(),
             'delete': Delete(),
+            'join': Join(),
             'where': Where(),
             'insert': Insert(),
             'values': Values()}
@@ -261,6 +286,10 @@ class Query:
 
     def DELETE(self, *args):
         self.data['delete'].add(*args)
+        return self
+
+    def JOIN(self, *args):
+        self.data['join'].add(*args)
         return self
 
     def lines(self) -> Generator:

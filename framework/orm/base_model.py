@@ -1,31 +1,35 @@
 from typing import Generator
 from .field import FieldBase, IdField
 from .connector import connector
-from .manager import Manager
 
 
 class MetaModel(type):
-    class_dict = dict()
+    classes_dict = dict()
 
     def __new__(mcs, model_name: str, parents: tuple, attrs: dict):
         fields = dict()
+        related_fields = dict()
         new_attrs = {'id': IdField(nullable=True)}
         new_attrs.update(attrs)
         for k, v in new_attrs.items():
             if isinstance(v, FieldBase):
                 fields.update({k: v})
+                if v.foreign_key:
+                    related_fields.update({k: v.foreign_key.split('.')})
         model = super(MetaModel, mcs).__new__(mcs, model_name, parents, new_attrs)
         name = attrs['__qualname__'].lower()
         model.fields = fields
         model.model_name = attrs['__qualname__'].lower()
+        model.related_fields = related_fields
+        from .manager import Manager
         model.objects = Manager(model)
         if name != 'basemodel':
-            mcs.class_dict.update({name: fields})
+            mcs.classes_dict.update({name: model})
         return model
 
     @classmethod
     def create_tables(mcs):
-        CreateTable(mcs.class_dict)
+        CreateTable(mcs.classes_dict)
 
 
 class CreateTable:
@@ -43,9 +47,9 @@ class CreateTable:
 
     def _create_query(self) -> list:
         query_list = []
-        for model, fields in self.classes_dict.items():
-            query = f'CREATE TABLE IF NOT EXISTS {model} (\r\n\t'
-            query += f"{','.join(self._create_lines(fields))}\r\n\t);"
+        for name, model in self.classes_dict.items():
+            query = f'CREATE TABLE IF NOT EXISTS {name} (\r\n\t'
+            query += f"{','.join(self._create_lines(model.fields))}\r\n\t);"
             query_list.append(query)
         return query_list
 

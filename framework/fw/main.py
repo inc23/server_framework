@@ -54,7 +54,6 @@ class Framework:
     @staticmethod
     def _get_response(environ: dict, view: View, request: Request) -> Response:
         method = environ['REQUEST_METHOD'].lower()
-        print(view.__dict__)
         return view.run(method, request)
 
     def _to_response(self, response: Response) -> None:

@@ -4,15 +4,24 @@ from framework.orm.field import FloatField, IntField, DateField, TextField, Pass
 
 
 class User(BaseModel):
-    name = TextField(nullable=False, verbose_name='name')
-    last_name = TextField(nullable=False, verbose_name='last name')
-    password = PasswordField()
-    email = EmailField(nullable=False, unique=True)
+    name = TextField(nullable=False, verbose_name='name', placeholder='yur name')
+    last_name = TextField(nullable=False, verbose_name='last name', placeholder='your last name')
+    password = PasswordField(placeholder='password')
+    email = EmailField(nullable=False, unique=True, placeholder='your e-mail')
     created_at = DateField(defaults=datetime.utcnow)
     is_admin = BoolField(defaults=False)
 
     def __str__(self):
         return f'{self.name} {self.last_name}'
+
+
+class Post(BaseModel):
+    title = TextField(nullable=False, verbose_name='title')
+    text = TextField(nullable=False, verbose_name='text')
+    image = TextField(nullable=True, verbose_name='image')
+    author = IntField(nullable=False, foreign_key='user.id')
+    created_at = DateField(defaults=datetime.utcnow)
+    is_publish = BoolField(defaults=False)
 
 
 class OneTable(BaseModel):
@@ -22,7 +31,7 @@ class OneTable(BaseModel):
 
 
 class TwoTable(BaseModel):
-    one = IntField(foreign_key='onetable.id')
-
+    one2 = IntField(foreign_key='onetable.id')
+    user = IntField(nullable=False, foreign_key='user.id')
 
 
