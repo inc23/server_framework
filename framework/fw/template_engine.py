@@ -1,24 +1,7 @@
 import os
 import re
 from framework.fw.request import Request
-
-FOR_BLOCK_PATTERN = re.compile(
-    r'{% for (?P<variable>\w+) in (?P<seq>\w+) %}(?P<content>[\S\s]+?){% endfor %}'
-)
-IF_BLOCK_PATTERN = re.compile(
-    r'{% if (?P<variable>[a-zA-Z0-9_.]+)( == (?P<eq>[\S\s]+?))? %}(?P<content>[\S\s]+?)((?={% el)(?P<else_content>[\S\s]+?))?{% endif %}'
-)
-
-ELIF_BLOCK_PATTERN = re.compile(
-    r'{% elif (?P<variable>[a-zA-Z0-9_.]+)( == (?P<eq>[\S\s]*?))? %}(?P<content>[\S\s]*?)(?={% e|$)'
-
-)
-
-ELSE_BLOCK_PATTERN = re.compile(
-    r"{% else %}(?P<content>[\S\s]*)"
-)
-
-VARIABLE_PATTERN = re.compile(r'{{ (?P<variable>[a-zA-Z0-9_.]+) }}')
+from .regex import IF_BLOCK_PATTERN, VARIABLE_PATTERN, FOR_BLOCK_PATTERN, ELIF_BLOCK_PATTERN, ELSE_BLOCK_PATTERN
 
 
 class IfBlock:
@@ -35,8 +18,13 @@ class IfBlock:
         self.is_if_block = False
         self.is_else_block = False
 
-    def __call__(self, context, if_block: re, is_if_block: bool = True,
-                 elif_blocks: list | None = None, else_block: str | None = None) -> str:
+    def __call__(
+            self,
+            context: dict,
+            if_block: re,
+            is_if_block: bool = True,
+            elif_blocks: list | None = None,
+            else_block: str | None = None) -> str:
         self.context = context
         self.if_block = if_block
         self.is_if_block = is_if_block
@@ -56,29 +44,36 @@ class IfBlock:
         else:
             content = self.elif_blocks.pop(0)
         new_obj = self.__class__()
-        return new_obj(self.context, content, False, self.elif_blocks, self.else_block)
+        return new_obj(
+            self.context,
+            content,
+            False,
+            self.elif_blocks,
+            self.else_block)
 
-    def _get_result(self):
-        if (self.expression and self.var == self.expression) or self.is_else_block or (self.var and not self.expression):
+    def _get_result(self) -> str | bool:
+        if (self.expression and self.var == self.expression) or self.is_else_block or (
+                self.var and not self.expression):
             return self.content
         return False
 
-    def _set_regular(self):
+    def _set_regular(self) -> None:
         if self.is_if_block:
             self.regular = IF_BLOCK_PATTERN
         else:
             self.regular = ELIF_BLOCK_PATTERN
 
-    def _if_parse_block(self):
+    def _if_parse_block(self) -> None:
         if isinstance(self.if_block, str):
             return None
         self.var = self._resolve_variable(self.if_block.group('variable'))
         self.expression = self._resolve_exp(self.if_block.group('eq'))
         self.content = self.if_block.group('content')
-        elif_else_contents = self.if_block.group('else_content') if self.regular == IF_BLOCK_PATTERN else None
+        elif_else_contents = self.if_block.group(
+            'else_content') if self.regular == IF_BLOCK_PATTERN else None
         self._elif_else_parse(elif_else_contents)
 
-    def _elif_else_parse(self, elif_else_contents):
+    def _elif_else_parse(self, elif_else_contents) -> None:
         if elif_else_contents is not None:
             else_blocks = ELSE_BLOCK_PATTERN.finditer(elif_else_contents)
             if else_blocks:
@@ -154,7 +149,11 @@ class Engine:
         for var in used_var:
             var_in_template = '{{ %s }}' % var
             var = self._resolve_variable(context, var)
-            raw_template = re.sub(var_in_template, str(var), raw_template, count=1)
+            raw_template = re.sub(
+                var_in_template,
+                str(var),
+                raw_template,
+                count=1)
         return raw_template
 
     def _build_block_for(self, context: dict, raw_template: str) -> str:
@@ -166,9 +165,12 @@ class Engine:
             for i in context.get(for_block.group('seq'), []):
                 context_for_block = {for_block.group('variable'): i}
                 context_for_block.update(context)
-                content_with_ifs = self._build_block_if(context_for_block, for_block.group('content'))
-                build_for += self._build_block(context_for_block, content_with_ifs)
-            raw_template = FOR_BLOCK_PATTERN.sub(build_for, raw_template, count=1)
+                content_with_ifs = self._build_block_if(
+                    context_for_block, for_block.group('content'))
+                build_for += self._build_block(context_for_block,
+                                               content_with_ifs)
+            raw_template = FOR_BLOCK_PATTERN.sub(
+                build_for, raw_template, count=1)
         return raw_template
 
     @staticmethod
@@ -179,7 +181,8 @@ class Engine:
         for if_block in if_blocks:
             if_block_suber = IfBlock()
             if_block_suber = if_block_suber(context, if_block)
-            raw_template = IF_BLOCK_PATTERN.sub(if_block_suber, raw_template, count=1)
+            raw_template = IF_BLOCK_PATTERN.sub(
+                if_block_suber, raw_template, count=1)
         return raw_template
 
     def build(self, context: dict, template_name: str) -> str:
@@ -190,7 +193,10 @@ class Engine:
         return template
 
 
-def build_template(request: Request, context: dict = None, template_name: str = '') -> str:
+def build_template(
+        request: Request,
+        context: dict = None,
+        template_name: str = '') -> str:
     engine = Engine(
         request.settings.get('BASE_DIR'),
         request.settings.get('TEMPLATES_DIR')

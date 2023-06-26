@@ -133,7 +133,7 @@ class TextField(Field):
 
 
 class ImageField(TextField):
-    pass
+    html_type = 'file'
 
 
 class FloatField(Field):
@@ -204,7 +204,9 @@ class BoolField(IntField):
                 obj.value_fields_dict[self.name] = 1
             else:
                 obj.value_fields_dict[self.name] = 0
-        if value == 0 or value == 1:
+        elif value == '0' or value == '1':
+            obj.value_fields_dict[self.name] = int(value)
+        elif value == 0 or value == 1:
             obj.value_fields_dict[self.name] = value
         else:
             raise TypeError(f'boolean field should be bool but got {type(value)}')

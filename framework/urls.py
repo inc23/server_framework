@@ -1,5 +1,5 @@
 from .fw.urls import Url
-from .view import Login, Users, UserItem, UserCreate, UserUpdate
+from .view import Login, Users, UserItem, UserCreate, UserUpdate, PostCreate
 
 
 urlpatterns = [
@@ -7,6 +7,7 @@ urlpatterns = [
     Url('/users', Users, 'users'),
     Url('/user', UserItem, 'user'),
     Url('/new', UserCreate, 'create_user'),
-    Url('/update', UserUpdate, 'create_user')
+    Url('/update', UserUpdate, 'create_user'),
+    Url('/new_post', PostCreate, 'create_post')
 ]
 

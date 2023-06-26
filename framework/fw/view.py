@@ -38,18 +38,19 @@ class View:
         body = build_template(request, self.context, self.template_name)
         return Response(request=request, body=body)
 
-    def post(self, request: Request, *args, **kwargs):
+    def post(self, request: Request, *args, **kwargs) ->Response:
         pass
 
-    def run(self, method, request):
+    def run(self, method, request) -> Response:
         self.request = request
         if hasattr(self, method):
             return getattr(self, method)(request)
         raise MethodError
 
-    def render_to_response(self, context):
+    def render_to_response(self, context) -> Response:
         body = build_template(self.request, context, self.template_name)
         return Response(request=self.request, body=body)
+
 
 class ListView(View):
 
@@ -64,12 +65,12 @@ class ListView(View):
 
 class DetailView(View):
 
+    model_class: Type[BaseModel]
+    name_in_template: str = 'model'
+
     def __init__(self, instance_id):
         self.id = instance_id
         super(DetailView, self).__init__()
-
-    model_class: Type[BaseModel]
-    name_in_template: str = 'model'
 
     def get_context_data(self, **kwargs) -> dict:
         context = super(DetailView, self).get_context_data(**kwargs)
@@ -93,9 +94,6 @@ class CreateView(View):
 
     def post(self, request: Request, *args, **kwargs) -> Response:
         form = self.form(request.POST)
-        print('______________________')
-        print(form.get_result_dict)
-        print('----------------------')
         if form.is_valid():
             return self.form_valid(form)
         return self.form_invalid(form)
@@ -122,11 +120,11 @@ class UpdateView(CreateView):
         return context
 
     @property
-    def get_form(self):
+    def get_form(self) -> BaseForm:
         form = self.form_class(obj=self.get_object())
         return form
 
-    def get_object(self):
+    def get_object(self) -> BaseModel:
         class_object = self.form_class.model_class
         obj = class_object.objects.get(class_object.id == self.id)
         return obj

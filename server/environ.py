@@ -17,7 +17,7 @@ class Environ:
         self.environ.update(self.raw_request.parse_headers())
 
     def from_body_to_environ(self) -> None:
-        self.environ.update({'wsgi_input': self.raw_request.parse_body()})
+        self.environ.update({'wsgi.input': self.raw_request.parse_body()})
 
     def get_environ(self) -> dict:
         self.from_start_line_to_environ()

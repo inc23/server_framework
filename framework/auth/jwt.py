@@ -25,15 +25,16 @@ def signature_encode(header: bytes | str, payload: bytes | str) -> str:
 
 
 def create_jwt_token(header: dict, payload: dict) -> str:
-    header_encoded = base64.urlsafe_b64encode(json.dumps(header).encode()).rstrip(b'=')
-    payload_encoded = base64.urlsafe_b64encode(json.dumps(payload).encode()).rstrip(b'=')
+    header_encoded = base64.urlsafe_b64encode(
+        json.dumps(header).encode()).rstrip(b'=')
+    payload_encoded = base64.urlsafe_b64encode(
+        json.dumps(payload).encode()).rstrip(b'=')
     signature = signature_encode(header_encoded, payload_encoded)
     jwt = f'{header_encoded.decode()}.{payload_encoded.decode()}.{signature}'
     return jwt
 
 
 def check_jwt(received_jwt: str) -> dict | bool:
-
     header_encoded, payload_encoded, signature = received_jwt.split('.')
     new_signature = signature_encode(header_encoded, payload_encoded)
     if new_signature == signature:

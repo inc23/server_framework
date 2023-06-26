@@ -1,10 +1,11 @@
 import socket
 import selectors
 import traceback
-from time import time, sleep
+from time import time
 from typing import Callable
 from .environ import Environ
 from .http_response import Response
+from .multipart_parse import MultiPartParser
 
 
 class Server:
@@ -35,12 +36,14 @@ class Server:
 
     def send_response(self) -> None:
         try:
-            request = self.client_socket.recv(1094)
+            request = self.client_socket.recv(1024)
             if request:
                 t1 = time()
                 if self.framework is not None:
                     resp = Response()
                     environ = Environ(request).get_environ()
+                    if 'multipart/form-data' in environ.get('CONTENT_TYPE', ''):
+                        MultiPartParser(environ, self.client_socket, request)
                     body = self.framework(environ, resp.start_response)
                     response = resp.create_response(body=body)
                 else:

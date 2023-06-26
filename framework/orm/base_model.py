@@ -82,5 +82,5 @@ class BaseModel(metaclass=MetaModel):
             for key in self.fields:
                 setattr(self, key, kwargs.get(key, None))
 
-    def save(self):
+    def save(self) -> None:
         self.objects.save(self.value_fields_dict, self)

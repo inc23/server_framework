@@ -18,6 +18,18 @@ input[type=checkbox] {
     width: 5%
 }
 
+.wrong-field {
+  width: 100%;
+  background-color: #dbe1de;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: 2px solid red;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+
 input[type=submit] {
   width: 100%;
   background-color: #4CAF50;
@@ -49,7 +61,7 @@ div {
 
 <H1> You have to login </H1>
 <div>
-<form method="post">
+<form method="post" enctype="multipart/form-data" accept-charset="UTF-8">
     {{ form.as_p }}
     <button type="submit">Create</button><br>
 </form>

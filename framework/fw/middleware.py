@@ -14,21 +14,6 @@ class Middleware:
         pass
 
 
-# class Session(Middleware):
-#
-#     def to_response(self, response: Response) -> None:
-#         if not response.request.session_id:
-#             response.headers.update(
-#                 {'Set-Cookie': f'session_id={uuid4()}'}
-#             )
-#
-#     def to_request(self, request: Request) -> None:
-#         cookies = request.environ.get('COOKIE')
-#         if not cookies:
-#             return
-#         session_id = parse_qs(cookies)['session_id']
-#         request.extra['session_id'] = session_id
-
 class Session(Middleware):
 
     def to_response(self, response: Response) -> None:

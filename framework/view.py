@@ -1,4 +1,4 @@
-from .form import UserCreateForm, UserUpdateForm
+from .form import UserCreateForm, UserUpdateForm, PostCreateForm
 from .fw.view import View, Request, ListView, DetailView, redirect, CreateView, UpdateView
 from .auth.auth import authenticate, login
 from .model import User
@@ -43,3 +43,8 @@ class UserUpdate(UpdateView):
     redirect_page = 'users'
 
 
+class PostCreate(CreateView):
+    form_class = PostCreateForm
+    extra_context = {'title': 'new post'}
+    template_name = 'create_post.html'
+    redirect_page = 'users'

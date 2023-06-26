@@ -1,6 +1,8 @@
 from .base_model import BaseModel
 from typing import Type
 
+from .field import BoolField
+
 
 class BaseForm:
     
@@ -26,7 +28,8 @@ class BaseForm:
 
     def _get_post_dict(self) -> None:
         for k, v in self.post_dict.items():
-            self.post_resul_dict.update({k: v[0]})
+            if k != 'file_to_upload':
+                self.post_resul_dict.update({k: v[0]})
 
     def is_valid(self) -> bool:
         is_valid = True
@@ -37,34 +40,42 @@ class BaseForm:
                 is_valid = False
                 self.get_result_dict.update(
                     {f'{k}_label': f'<label for="{k}" style="color: red;"> wrong {k} value </label>'})
-                print(e)
             except KeyError as e:
                 is_valid = False
                 self.get_result_dict.update(
                     {f'{k}_label': f'<label for="{k}" style="color: red;"> field {k} must be filled</label>'})
-                print(e)
         return is_valid
 
     def save(self, commit: bool = True) -> None:
         if commit:
             self.obj.save()
+            if self.post_dict['file_to_upload']:
+                for path, file in self.post_dict['file_to_upload'].items():
+                    with open(path, 'wb') as f:
+                        f.write(file)
 
     def _build_dict(self) -> None:
         for k, v in self.model_class.fields.items():
             if k in self.include_field:
                 placeholder = f'placeholder="input {v.placeholder}"' if v.placeholder else ''
                 value = str(getattr(self.obj, k)) if self.obj else ''
-                text = f'<input type="{v.html_type}" id="{k}" name="{k}" value="{value}" {placeholder}><br><br>'
+                if isinstance(v, BoolField):
+                    checked = 'checked' if value else ''
+                    text = f'<input type="hidden" name="{k}" value="0">\n' \
+                           f'<input type="{v.html_type}" {checked} id="{k}" name="{k}" value="1">'
+                else:
+                    text = f'<input type="{v.html_type}" id="{k}" name="{k}" value="{value}" {placeholder}><br><br>'
+                label_text = f'<label for="{k}">{v.verbose_name}</label>'
                 self.get_result_dict.update(
                     {
-                     f'{k}_label': f'<label for="{k}">{v.verbose_name}</label>',
+                     f'{k}_label': label_text,
                      k: text
                     }
                 )
 
     @property
     def as_p(self) -> str:
-        return ''.join(self.get_result_dict.values()) + '<br>'
+        return '\n'.join(self.get_result_dict.values()) + '<br>'
 
     def __setattr__(self, key, value):
         if key in self.include_field:

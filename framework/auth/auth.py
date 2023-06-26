@@ -9,7 +9,6 @@ def authenticate(email: str, password: str) -> User | None:
     if user:
         if verify_password(password, user.password):
             return user
-        return None
     return None
 
 

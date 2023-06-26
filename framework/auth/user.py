@@ -1,5 +1,5 @@
 import datetime
-from framework.orm.field import FloatField, IntField, DateField, PasswordField, TextField, EmailField, BoolField
+from framework.orm.field import DateField, PasswordField, TextField, EmailField, BoolField
 from framework.orm.base_model import BaseModel
 
 

@@ -1,10 +1,10 @@
 from datetime import datetime
 from framework.orm.base_model import BaseModel, MetaModel
-from framework.orm.field import FloatField, IntField, DateField, TextField, PasswordField, EmailField, BoolField
+from framework.orm.field import FloatField, IntField, DateField, TextField, PasswordField, EmailField, BoolField, ImageField
 
 
 class User(BaseModel):
-    name = TextField(nullable=False, verbose_name='name', placeholder='yur name')
+    name = TextField(nullable=True, verbose_name='name', placeholder='your name')
     last_name = TextField(nullable=False, verbose_name='last name', placeholder='your last name')
     password = PasswordField(placeholder='password')
     email = EmailField(nullable=False, unique=True, placeholder='your e-mail')
@@ -18,7 +18,7 @@ class User(BaseModel):
 class Post(BaseModel):
     title = TextField(nullable=False, verbose_name='title')
     text = TextField(nullable=False, verbose_name='text')
-    image = TextField(nullable=True, verbose_name='image')
+    image = ImageField(nullable=True, verbose_name='image')
     author = IntField(nullable=False, foreign_key='user.id')
     created_at = DateField(defaults=datetime.utcnow)
     is_publish = BoolField(defaults=False)
