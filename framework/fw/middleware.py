@@ -2,7 +2,7 @@ from urllib.parse import parse_qs
 from .request import Request
 from .response import Response
 from framework.auth.jwt import check_jwt
-from ..model import User
+from framework.model import User
 
 
 class Middleware:

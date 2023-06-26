@@ -2,9 +2,7 @@ import cgi
 import io
 import os
 from urllib.parse import parse_qs
-from typing import AnyStr, Any
-
-import framework.settings
+from framework import settings
 
 
 class Dict(dict):
@@ -47,7 +45,7 @@ class Request:
                         self.POST.update({val.name: [v]})
                 else:
                     file_data = val.file.read()
-                    field_path = os.path.join(framework.settings.media, val.filename)
+                    field_path = os.path.join(settings.media, val.filename)
                     self.POST.update({val.name: [field_path]})
                     self.POST['file_to_upload'].update({field_path: file_data})
         else:

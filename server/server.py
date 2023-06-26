@@ -36,7 +36,7 @@ class Server:
 
     def send_response(self) -> None:
         try:
-            request = self.client_socket.recv(1024)
+            request = self.client_socket.recv(2048)
             if request:
                 t1 = time()
                 if self.framework is not None:

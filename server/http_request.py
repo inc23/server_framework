@@ -5,7 +5,7 @@ class RequestParse:
 
     def __init__(self, data: bytes):
         self.data = data.split(b'\r\n\r\n')
-        if len(self.data) > 1:
+        if len(self.data) == 2:
             start_headers, self.body = self.data
         else:
             start_headers, self.body = self.data[0], b''

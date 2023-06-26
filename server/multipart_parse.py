@@ -1,6 +1,5 @@
 import socket
 import io
-import cgi
 
 
 class MultiPartParser:
@@ -8,8 +7,7 @@ class MultiPartParser:
     def __init__(self, environ: dict, client_socket: socket.socket, http_request: bytes):
         self.environ = environ
         self.client_socket = client_socket
-        self.http_request = http_request
-        self.parts_data = b''
+        self.parts_data = http_request
         self._build_data()
 
     def _build_data(self) -> None:

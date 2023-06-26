@@ -151,7 +151,7 @@ class PasswordField(Field):
         value = self._type_check(obj, value)
         if obj.new_instance:
             if len(value) < 6:
-                raise Exception('password is to short')
+                raise ValueError('password is to short')
             obj.value_fields_dict[self.name] = get_password_hash(value)
         else:
             obj.value_fields_dict[self.name] = value
@@ -167,7 +167,7 @@ class EmailField(TextField):
         if match:
             obj.value_fields_dict[self.name] = value
         else:
-            raise Exception('not email format')
+            raise ValueError('not email format')
 
 
 class DateField(Field):

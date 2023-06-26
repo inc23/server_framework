@@ -1,6 +1,6 @@
 from datetime import datetime
-from framework.orm.base_model import BaseModel, MetaModel
-from framework.orm.field import FloatField, IntField, DateField, TextField, PasswordField, EmailField, BoolField, ImageField
+from framework.orm.base_model import BaseModel
+from .orm.field import FloatField, IntField, DateField, TextField, PasswordField, EmailField, BoolField, ImageField
 
 
 class User(BaseModel):

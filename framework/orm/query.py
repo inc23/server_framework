@@ -1,6 +1,5 @@
-from typing import Generator, Dict, Tuple
-
-from framework.orm.field import Expression
+from typing import Generator, Tuple
+from .field import Expression
 
 AND = ' AND '
 OR = ' OR '

@@ -1,5 +1,5 @@
-from typing import Any, Type
-import framework.settings
+from typing import Any
+from framework import settings
 from .connector import connector
 from .field import Expression
 from .query import Query
@@ -18,7 +18,7 @@ class Manager:
 
     def _fetch(self) -> list:
         query = str(self.q)
-        if framework.settings.echo_sql:
+        if settings.echo_sql:
             print(self.q)
         db_result = self.conn.fetch(query)
         result = []

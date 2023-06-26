@@ -1,6 +1,6 @@
 import os
 import re
-from framework.fw.request import Request
+from .request import Request
 from .regex import IF_BLOCK_PATTERN, VARIABLE_PATTERN, FOR_BLOCK_PATTERN, ELIF_BLOCK_PATTERN, ELSE_BLOCK_PATTERN
 
 

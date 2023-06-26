@@ -1,7 +1,6 @@
-import re
 from typing import Callable, List, Type
-from framework.fw.request import Request
-from framework.fw.view import View, Page404
+from .request import Request
+from .view import View, Page404
 from .response import Response
 from .urls import Url, start_urlpatterns
 from .middleware import Middleware

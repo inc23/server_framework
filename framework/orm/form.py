@@ -1,6 +1,5 @@
 from .base_model import BaseModel
 from typing import Type
-
 from .field import BoolField
 
 
@@ -12,6 +11,7 @@ class BaseForm:
     def __init__(self, obj: BaseModel | None = None):
         self.post_resul_dict = dict()
         self.get_result_dict = dict()
+        self.post_dict = None
         self.obj = obj
         if self.include_field == 'all':
             self.include_field = self.model_class.fields.keys()
@@ -21,6 +21,7 @@ class BaseForm:
             self._build_dict()
         else:
             self.post_dict = post_dict
+            self._build_dict()
             self._get_post_dict()
             if not self.obj:
                 self.obj = self.model_class()
@@ -33,17 +34,18 @@ class BaseForm:
 
     def is_valid(self) -> bool:
         is_valid = True
+        print(self.post_resul_dict)
         for k in self.include_field:
             try:
                 setattr(self.obj, k, self.post_resul_dict[k])
             except ValueError as e:
                 is_valid = False
                 self.get_result_dict.update(
-                    {f'{k}_label': f'<label for="{k}" style="color: red;"> wrong {k} value </label>'})
+                    {f'{k}_label': f'<label for="{k}" style="color: red;"> {e} </label>'})
             except KeyError as e:
                 is_valid = False
                 self.get_result_dict.update(
-                    {f'{k}_label': f'<label for="{k}" style="color: red;"> field {k} must be filled</label>'})
+                    {f'{k}_label': f'<label for="{k}" style="color: red;"> {k} cant be empty</label>'})
         return is_valid
 
     def save(self, commit: bool = True) -> None:
@@ -58,7 +60,12 @@ class BaseForm:
         for k, v in self.model_class.fields.items():
             if k in self.include_field:
                 placeholder = f'placeholder="input {v.placeholder}"' if v.placeholder else ''
-                value = str(getattr(self.obj, k)) if self.obj else ''
+                if self.obj:
+                    value = str(getattr(self.obj, k))
+                elif self.post_dict:
+                    value = self.post_dict.get(k, [''])[0]
+                else:
+                    value = ''
                 if isinstance(v, BoolField):
                     checked = 'checked' if value else ''
                     text = f'<input type="hidden" name="{k}" value="0">\n' \

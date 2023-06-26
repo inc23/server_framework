@@ -1,12 +1,12 @@
 import sqlite3
 import os
-from framework.settings import db_dir_path, db_name
+from framework import settings
 
 
 class DBConnector:
 
     def __init__(self):
-        db_path = os.path.join(db_dir_path, db_name)
+        db_path = os.path.join(settings.db_dir_path, settings.db_name)
         self.conn = sqlite3.connect(db_path)
         self.cursor = self.conn.cursor()
 
