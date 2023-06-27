@@ -9,13 +9,13 @@ from ..orm.base_model import MetaModel
 
 class Framework:
 
-    __slots__ = ('urls', 'settings', 'middlewares')
+    __slots__ = ('_urls', '_settings', '_middlewares')
 
     def __init__(self, urls: List[Url], settings: dict, middlewares: List[Type[Middleware]]):
-        self.urls = start_urlpatterns
-        self.urls.extend(urls)
-        self.settings = settings
-        self.middlewares = middlewares
+        self._urls = start_urlpatterns
+        self._urls.extend(urls)
+        self._settings = settings
+        self._middlewares = middlewares
         MetaModel.create_tables()
 
     def __call__(self, environ: dict, start_response: Callable) -> bytes:
@@ -37,7 +37,7 @@ class Framework:
 
     def _find_view(self, url: str) -> View:
         url, arg = self._prepare_url(url)
-        for path in self.urls:
+        for path in self._urls:
             if path.url == url:
                 return path.view(arg)
         return Page404()
@@ -48,7 +48,7 @@ class Framework:
         return view
 
     def _get_request(self, environ: dict) -> Request:
-        return Request(environ, self.settings)
+        return Request(environ, self._settings)
 
     @staticmethod
     def _get_response(environ: dict, view: View, request: Request) -> Response:
@@ -56,11 +56,11 @@ class Framework:
         return view.run(method, request)
 
     def _to_response(self, response: Response) -> None:
-        for middleware in self.middlewares:
+        for middleware in self._middlewares:
             middleware().to_response(response)
 
     def _to_request(self, request: Request) -> None:
-        for middleware in self.middlewares:
+        for middleware in self._middlewares:
             middleware().to_request(request)
 
 

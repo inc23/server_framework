@@ -7,23 +7,23 @@ class DBConnector:
 
     def __init__(self):
         db_path = os.path.join(settings.db_dir_path, settings.db_name)
-        self.conn = sqlite3.connect(db_path)
-        self.cursor = self.conn.cursor()
+        self._conn = sqlite3.connect(db_path)
+        self._cursor = self._conn.cursor()
 
     def get_connector(self):
-        return self.conn
+        return self._conn
 
     def fetch(self, query: str) -> list:
-        self.cursor.execute(query)
-        return self.cursor.fetchall()
+        self._cursor.execute(query)
+        return self._cursor.fetchall()
 
     def create(self, query: str, *args) -> None:
-        self.cursor.execute(query, args)
-        self.conn.commit()
+        self._cursor.execute(query, args)
+        self._conn.commit()
 
     def update(self, query: str) -> None:
-        self.cursor.execute(query)
-        self.conn.commit()
+        self._cursor.execute(query)
+        self._conn.commit()
 
 
 connector = DBConnector()

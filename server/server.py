@@ -3,52 +3,49 @@ import selectors
 import traceback
 from time import time
 from typing import Callable
-from .environ import Environ
 from .http_response import Response
-from .multipart_parse import MultiPartParser
+from .request_parse import RequestParser
 
 
 class Server:
 
     def __init__(self, framework: Callable = None, host: str = 'localhost', port: int = 5000):
-        self.selector = selectors.DefaultSelector()
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client_socket, self.addr = None, None
-        self.framework = framework
-        self.host = host
-        self.port = port
-        self.run_server()
-        self.run_event_loop()
+        self._selector = selectors.DefaultSelector()
+        self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._client_socket, self._addr = None, None
+        self._framework = framework
+        self._host = host
+        self._port = port
+        self._run_server()
+        self._run_event_loop()
 
-    def run_server(self) -> None:
-        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.server_socket.bind((self.host, self.port))
-        self.server_socket.listen()
-        self.selector.register(self.server_socket, selectors.EVENT_READ, self.accept_connection)
+    def _run_server(self) -> None:
+        self._server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self._server_socket.bind((self._host, self._port))
+        self._server_socket.listen()
+        self._selector.register(self._server_socket, selectors.EVENT_READ, self._accept_connection)
 
-    def accept_connection(self) -> None:
-        if self.client_socket is not None:
-            self.client_socket.close()
-            self.selector.unregister(self.client_socket)
-        self.client_socket, self.addr = self.server_socket.accept()
-        print(f'connect with {self.addr}')
-        self.selector.register(self.client_socket, selectors.EVENT_READ, self.send_response)
+    def _accept_connection(self) -> None:
+        if self._client_socket is not None:
+            self._client_socket.close()
+            self._selector.unregister(self._client_socket)
+        self._client_socket, self._addr = self._server_socket.accept()
+        print(f'connect with {self._addr}')
+        self._selector.register(self._client_socket, selectors.EVENT_READ, self._send_response)
 
-    def send_response(self) -> None:
+    def _send_response(self) -> None:
         try:
-            request = self.client_socket.recv(2048)
+            request = self._client_socket.recv(1024)
             if request:
                 t1 = time()
-                if self.framework is not None:
+                if self._framework is not None:
                     resp = Response()
-                    environ = Environ(request).get_environ()
-                    if 'multipart/form-data' in environ.get('CONTENT_TYPE', ''):
-                        MultiPartParser(environ, self.client_socket, request)
-                    body = self.framework(environ, resp.start_response)
+                    environ = RequestParser(self._client_socket, request).get_environ()
+                    body = self._framework(environ, resp.start_response)
                     response = resp.create_response(body=body)
                 else:
                     response = '404'.encode('utf-8')
-                self.client_socket.send(response)
+                self._client_socket.send(response)
                 timeout = (time() - t1)*1000
                 print(f'timeout time msec {timeout}')
 
@@ -56,13 +53,13 @@ class Server:
             traceback.print_exc()
 
         finally:
-            self.selector.unregister(self.client_socket)
-            self.client_socket.close()
-            self.client_socket = None
+            self._selector.unregister(self._client_socket)
+            self._client_socket.close()
+            self._client_socket = None
 
-    def run_event_loop(self) -> None:
+    def _run_event_loop(self) -> None:
         while True:
-            events = self.selector.select()
+            events = self._selector.select()
             try:
                 for event, _ in events:
                     callback = event.data

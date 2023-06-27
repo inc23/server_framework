@@ -30,8 +30,8 @@ class FieldBase:
             placeholder: str | None = None,
             choices: tuple | None = None
     ):
-        self.nullable = nullable
-        self.defaults = defaults
+        self._nullable = nullable
+        self._defaults = defaults
         self.foreign_key = foreign_key
         self.unique = unique
         self.placeholder = placeholder
@@ -40,7 +40,7 @@ class FieldBase:
 
     def __set_name__(self, owner, name):
         self.name = name
-        self.owner = owner
+        self._owner = owner
         if not self.verbose_name:
             self.verbose_name = self.name
 
@@ -50,7 +50,7 @@ class FieldBase:
         elif other is None:
             other = 'Null'
             exp = 'IS'
-        return Expression(f'{self.owner.model_name}.{self.name} {exp} {other}')
+        return Expression(f'{self._owner.model_name}.{self.name} {exp} {other}')
 
     def __eq__(self, other) -> Expression:
         return self._create_expression(other, '=')
@@ -77,7 +77,7 @@ class Field(FieldBase):
         if self.foreign_key is not None:
             model, field = self.foreign_key.split('.')
             self.foreign_key = f'{model}({field})'
-        if not self.nullable:
+        if not self._nullable:
             self.type += ' NOT NULL'
         if self.unique:
             self.type += ' UNIQUE'
@@ -85,7 +85,7 @@ class Field(FieldBase):
 
     def _type_check(self, obj, value) -> Any:
         if not isinstance(value, self.check_type) and not self.foreign_key:
-            if not self.nullable:
+            if not self._nullable:
                 try:
                     value = self.check_type(value)
                 except TypeError:
@@ -102,12 +102,12 @@ class Field(FieldBase):
         if obj is None:
             return self
         if not obj.value_fields_dict.get(self.name, False):
-            if self.defaults is not None:
-                if isinstance(self.defaults, Callable):
-                    obj.value_fields_dict[self.name] = self.defaults()
+            if self._defaults is not None:
+                if isinstance(self._defaults, Callable):
+                    obj.value_fields_dict[self.name] = self._defaults()
                 else:
-                    obj.value_fields_dict[self.name] = self.defaults
-            elif self.nullable:
+                    obj.value_fields_dict[self.name] = self._defaults
+            elif self._nullable:
                 obj.value_fields_dict[self.name] = None
             else:
                 raise ValueError(f'field {obj.__class__.__qualname__}.{self.name} cant be null')
@@ -175,7 +175,7 @@ class DateField(Field):
     html_type = 'date'
 
     def __set__(self, obj, value: datetime) -> None:
-        if self.defaults is not None:
+        if self._defaults is not None:
             if isinstance(value, datetime):
                 obj.value_fields_dict[self.name] = value.timestamp()
             elif isinstance(value, float):
@@ -215,8 +215,8 @@ class BoolField(IntField):
         if obj is None:
             return self
         if obj.value_fields_dict.get(self.name) is None:
-            if self.defaults is not None:
-                setattr(obj, self.name, self.defaults)
+            if self._defaults is not None:
+                setattr(obj, self.name, self._defaults)
         if obj.value_fields_dict[self.name] == 1:
             return True
         return False

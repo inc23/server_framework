@@ -9,12 +9,12 @@ COMA = ', '
 class Q:
 
     def __init__(self, exp: str = AND, **kwargs):
-        self.exp = exp
-        self.data = kwargs
+        self._exp = exp
+        self._data = kwargs
 
     def __str__(self):
-        kv_pair = [f'{k} = {v}' for k, v in self.data.items() if '__' not in k]
-        for k, v in self.data.items():
+        kv_pair = [f'{k} = {v}' for k, v in self._data.items() if '__' not in k]
+        for k, v in self._data.items():
             if v is not None:
                 if '__' in k:
                     k = k.split('__')
@@ -27,14 +27,14 @@ class Q:
                             v = f'{v[:-2]})'
                         line = f'{k[0]} IN {v}\n\t'
                         kv_pair.append(line)
-        return self.exp.join(kv_pair)
+        return self._exp.join(kv_pair)
 
     def update_q(self) -> str:
-        kv_pair = [f'{k} = "{v}"' for k, v in self.data.items()]
-        return self.exp.join(kv_pair)
+        kv_pair = [f'{k} = "{v}"' for k, v in self._data.items()]
+        return self._exp.join(kv_pair)
 
     def __bool__(self):
-        return bool(self.data)
+        return bool(self._data)
 
 
 class BaseExp:
@@ -46,152 +46,152 @@ class BaseExp:
     def __bool__(self):
         raise NotImplementedError
 
-    def line(self):
+    def _line(self):
         raise NotImplementedError
 
     def definition(self):
-        return f'{self.name}\n\t{self.line()}\n'
+        return f'{self.name}\n\t{self._line()}\n'
 
 
 class Select(BaseExp):
     name = 'SELECT'
 
     def __init__(self):
-        self.data = []
+        self._data = []
 
     def add(self, *args) -> None:
-        self.data.extend(args)
+        self._data.extend(args)
 
-    def line(self) -> str:
-        return ', '.join(self.data)
+    def _line(self) -> str:
+        return ', '.join(self._data)
 
     def __bool__(self):
-        return bool(self.data)
+        return bool(self._data)
 
 
 class SelectD(BaseExp):
     name = 'SELECT DISTINCT'
 
     def __init__(self):
-        self.data = []
+        self._data = []
 
     def add(self, *args) -> None:
-        self.data.extend(args)
+        self._data.extend(args)
 
-    def line(self) -> str:
-        return ', '.join(self.data)
+    def _line(self) -> str:
+        return ', '.join(self._data)
 
     def __bool__(self):
-        return bool(self.data)
+        return bool(self._data)
 
 
 class From(BaseExp):
     name = 'FROM'
 
     def __init__(self):
-        self.data = []
+        self._data = []
 
     def add(self, *args) -> None:
-        self.data.extend(args)
+        self._data.extend(args)
 
-    def line(self) -> str:
-        return ', '.join(self.data)
+    def _line(self) -> str:
+        return ', '.join(self._data)
 
     def __bool__(self):
-        return bool(self.data)
+        return bool(self._data)
 
 
 class Update(BaseExp):
     name = 'UPDATE'
 
     def __init__(self):
-        self.data = []
+        self._data = []
 
     def add(self, *args) -> None:
-        self.data.extend(args)
+        self._data.extend(args)
 
-    def line(self) -> str:
-        return ', '.join(self.data)
+    def _line(self) -> str:
+        return ', '.join(self._data)
 
     def __bool__(self):
-        return bool(self.data)
+        return bool(self._data)
 
 
 class Set(BaseExp):
     name = 'SET'
 
     def __init__(self, **kwargs):
-        self.q = Q(COMA, **kwargs)
+        self._q = Q(COMA, **kwargs)
 
     def add(self, **kwargs) -> None:
-        self.q = Q(COMA, **kwargs)
+        self._q = Q(COMA, **kwargs)
 
-    def line(self) -> str:
-        return self.q.update_q()
+    def _line(self) -> str:
+        return self._q.update_q()
 
     def __bool__(self):
-        return bool(self.q)
+        return bool(self._q)
 
 
 class Where(BaseExp):
     name = 'WHERE'
 
     def __init__(self):
-        self.q = None
+        self._q = None
 
     def add(self, exp: str = AND, expression: Expression = None, **kwargs) -> None:
         if expression is None:
-            self.q = Q(exp, **kwargs)
+            self._q = Q(exp, **kwargs)
         else:
-            self.q = str(expression)
+            self._q = str(expression)
 
-    def line(self) -> str:
-        return str(self.q)
+    def _line(self) -> str:
+        return str(self._q)
 
     def __bool__(self):
-        return bool(self.q)
+        return bool(self._q)
 
 
 class Insert(BaseExp):
     name = 'INSERT INTO'
 
     def __init__(self):
-        self.data = []
-        self.table = None
+        self._data = []
+        self._table = None
 
     def __call__(self, table) -> None:
-        self.table = table
+        self._table = table
 
     def add(self, *args) -> None:
-        self.data.extend(args)
+        self._data.extend(args)
 
     def __bool__(self):
-        return bool(self.data)
+        return bool(self._data)
 
     def definition(self) -> str:
-        return f'{self.name} {self.table} ({self.line()})\n'
+        return f'{self.name} {self._table} ({self._line()})\n'
 
-    def line(self) -> str:
-        return ', '.join(self.data)
+    def _line(self) -> str:
+        return ', '.join(self._data)
 
 
 class Values(BaseExp):
     name = 'VALUES'
 
     def __init__(self):
-        self.data = []
+        self._data = []
 
     def add(self, *args) -> None:
-        self.data.extend(args)
+        self._data.extend(args)
 
     def __bool__(self):
-        return bool(self.data)
+        return bool(self._data)
 
-    def line(self) -> str:
-        return ', '.join(self.data)
+    def _line(self) -> str:
+        return ', '.join(self._data)
 
     def definition(self) -> str:
-        items = ','.join(['?'] * len(self.data))
+        items = ','.join(['?'] * len(self._data))
         return f'{self.name} ({items})'
 
 
@@ -199,16 +199,16 @@ class Delete(BaseExp):
     name = 'DELETE FROM'
 
     def __init__(self):
-        self.table = None
+        self._table = None
 
     def add(self, table: str) -> None:
-        self.table = table
+        self._table = table
 
     def __bool__(self):
-        return bool(self.table)
+        return bool(self._table)
 
-    def line(self) -> str:
-        return self.table
+    def _line(self) -> str:
+        return self._table
 
 
 class Join(BaseExp):
@@ -216,29 +216,29 @@ class Join(BaseExp):
     'JOIN onetable ON onetable.id = twotable.one2'
 
     def __init__(self):
-        self.data = []
+        self._data = []
 
     def add(self, table_name: str, related_tuple: Tuple[str, str]):
-        self.data.append((table_name, related_tuple))
+        self._data.append((table_name, related_tuple))
 
-    def line(self):
-        for data in self.data:
+    def _line(self):
+        for data in self._data:
             table_name, related_list = data
             field, foreign_table_field = related_list
             foreign_table, foreign_field = foreign_table_field
             yield f'{self.name}\n\t{foreign_table} ON {foreign_table}.{foreign_field} = {table_name}.{field}\n'
 
     def definition(self):
-        return ''.join(self.line())
+        return ''.join(self._line())
 
     def __bool__(self):
-        return bool(self.data)
+        return bool(self._data)
 
 
 class Query:
 
     def __init__(self):
-        self.data = {
+        self._data = {
             'select': Select(),
             'selectd': SelectD(),
             'from': From(),
@@ -251,50 +251,50 @@ class Query:
             'values': Values()}
 
     def SELECT(self, *args):
-        self.data['select'].add(*args)
+        self._data['select'].add(*args)
         return self
 
     def SELECTD(self, *args):
-        self.data['selectd'].add(*args)
+        self._data['selectd'].add(*args)
         return self
 
     def FROM(self, *args):
-        self.data['from'].add(*args)
+        self._data['from'].add(*args)
         return self
 
     def WHERE(self, expression: Expression = None, **kwargs):
-        self.data['where'].add(expression=expression, **kwargs)
+        self._data['where'].add(expression=expression, **kwargs)
         return self
 
     def INSERT(self, table, *args):
-        self.data['insert'](table)
-        self.data['insert'].add(*args)
+        self._data['insert'](table)
+        self._data['insert'].add(*args)
         return self
 
     def UPDATE(self, *args):
-        self.data['update'].add(*args)
+        self._data['update'].add(*args)
         return self
 
     def SET(self, **kwargs):
-        self.data['set'].add(**kwargs)
+        self._data['set'].add(**kwargs)
         return self
 
     def VALUES(self, *args):
-        self.data['values'].add(*args)
+        self._data['values'].add(*args)
         return self
 
     def DELETE(self, *args):
-        self.data['delete'].add(*args)
+        self._data['delete'].add(*args)
         return self
 
     def JOIN(self, *args):
-        self.data['join'].add(*args)
+        self._data['join'].add(*args)
         return self
 
-    def lines(self) -> Generator:
-        for k in self.data:
-            if self.data[k]:
-                yield self.data[k].definition()
+    def _lines(self) -> Generator:
+        for k in self._data:
+            if self._data[k]:
+                yield self._data[k].definition()
 
     def __str__(self) -> str:
-        return ''.join(self.lines())
+        return ''.join(self._lines())

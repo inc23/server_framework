@@ -1,20 +1,12 @@
-import io
+class RequestLineHeadersParse:
 
-
-class RequestParse:
-
-    def __init__(self, data: bytes):
-        self.data = data.split(b'\r\n\r\n')
-        if len(self.data) == 2:
-            start_headers, self.body = self.data
-        else:
-            start_headers, self.body = self.data[0], b''
+    def __init__(self, start_headers: bytes):
         start_headers_list = start_headers.decode('utf-8').split('\r\n')
-        self.start_line = start_headers_list.pop(0)
-        self.headers = start_headers_list
+        self._start_line = start_headers_list.pop(0)
+        self._headers = start_headers_list
 
     def parse_starline(self) -> tuple:
-        method, path, protocol = self.start_line.split(' ')
+        method, path, protocol = self._start_line.split(' ')
         if '?' in path:
             path, qs = path.split('?')
         else:
@@ -23,12 +15,10 @@ class RequestParse:
 
     def parse_headers(self) -> dict:
         headers_dict = dict()
-        for header in self.headers:
+        for header in self._headers:
             k, v = header.split(': ')
             k: str = k.replace('-', '_')
             headers_dict.update({k.upper(): v})
         return headers_dict
 
-    def parse_body(self) -> io.BytesIO:
-        return io.BytesIO(self.body)
 

@@ -9,10 +9,10 @@ class BaseForm:
     include_field: tuple | str = 'all'
 
     def __init__(self, obj: BaseModel | None = None):
-        self.post_resul_dict = dict()
-        self.get_result_dict = dict()
-        self.post_dict = None
-        self.obj = obj
+        self._post_resul_dict = dict()
+        self._get_result_dict = dict()
+        self._post_dict = None
+        self._obj = obj
         if self.include_field == 'all':
             self.include_field = self.model_class.fields.keys()
 
@@ -20,39 +20,38 @@ class BaseForm:
         if post_dict is None:
             self._build_dict()
         else:
-            self.post_dict = post_dict
+            self._post_dict = post_dict
             self._build_dict()
             self._get_post_dict()
-            if not self.obj:
-                self.obj = self.model_class()
+            if not self._obj:
+                self._obj = self.model_class()
         return self
 
     def _get_post_dict(self) -> None:
-        for k, v in self.post_dict.items():
+        for k, v in self._post_dict.items():
             if k != 'file_to_upload':
-                self.post_resul_dict.update({k: v[0]})
+                self._post_resul_dict.update({k: v[0]})
 
     def is_valid(self) -> bool:
         is_valid = True
-        print(self.post_resul_dict)
         for k in self.include_field:
             try:
-                setattr(self.obj, k, self.post_resul_dict[k])
+                setattr(self._obj, k, self._post_resul_dict[k])
             except ValueError as e:
                 is_valid = False
-                self.get_result_dict.update(
+                self._get_result_dict.update(
                     {f'{k}_label': f'<label for="{k}" style="color: red;"> {e} </label>'})
             except KeyError as e:
                 is_valid = False
-                self.get_result_dict.update(
+                self._get_result_dict.update(
                     {f'{k}_label': f'<label for="{k}" style="color: red;"> {k} cant be empty</label>'})
         return is_valid
 
     def save(self, commit: bool = True) -> None:
         if commit:
-            self.obj.save()
-            if self.post_dict['file_to_upload']:
-                for path, file in self.post_dict['file_to_upload'].items():
+            self._obj.save()
+            if self._post_dict['file_to_upload']:
+                for path, file in self._post_dict['file_to_upload'].items():
                     with open(path, 'wb') as f:
                         f.write(file)
 
@@ -60,10 +59,10 @@ class BaseForm:
         for k, v in self.model_class.fields.items():
             if k in self.include_field:
                 placeholder = f'placeholder="input {v.placeholder}"' if v.placeholder else ''
-                if self.obj:
-                    value = str(getattr(self.obj, k))
-                elif self.post_dict:
-                    value = self.post_dict.get(k, [''])[0]
+                if self._obj:
+                    value = str(getattr(self._obj, k))
+                elif self._post_dict:
+                    value = self._post_dict.get(k, [''])[0]
                 else:
                     value = ''
                 if isinstance(v, BoolField):
@@ -73,7 +72,7 @@ class BaseForm:
                 else:
                     text = f'<input type="{v.html_type}" id="{k}" name="{k}" value="{value}" {placeholder}><br><br>'
                 label_text = f'<label for="{k}">{v.verbose_name}</label>'
-                self.get_result_dict.update(
+                self._get_result_dict.update(
                     {
                      f'{k}_label': label_text,
                      k: text
@@ -82,11 +81,11 @@ class BaseForm:
 
     @property
     def as_p(self) -> str:
-        return '\n'.join(self.get_result_dict.values()) + '<br>'
+        return '\n'.join(self._get_result_dict.values()) + '<br>'
 
     def __setattr__(self, key, value):
         if key in self.include_field:
-            setattr(self.obj, key, value)
+            setattr(self._obj, key, value)
         else:
             super(BaseForm, self).__setattr__(key, value)
 
