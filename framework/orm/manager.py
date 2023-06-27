@@ -11,31 +11,39 @@ class Manager:
         self.model = model
         self.model_name = model.model_name
         self.fields = model.fields.keys()
-        q = Query()
-        self._q = q.SELECT(*self.fields).FROM(self.model_name)
+        self._q = None
         self._conn = connector
         self._related_data: dict | None = None
+        self._set_default_q()
 
-    def _fetch(self) -> list:
+    def _set_default_q(self):
+        q = Query()
+        self._q = q.SELECT(*self.fields).FROM(self.model_name)
+
+    def _get_db_result(self):
         query = str(self._q)
         if settings.echo_sql:
             print(self._q)
         db_result = self._conn.fetch(query)
+        self._set_default_q()
+        return db_result
+
+    def _fetch(self) -> list:
         result = []
-        for row in db_result:
+        for row in self._get_db_result():
             model = self.model(new_instance=False)
             for field, val in zip(self.fields, row):
                 setattr(model, field, val)
             if self._related_data:
-                row = row[len(model.fields)-1:]
+                row = row[len(model.fields):]
                 for k, v in self._related_data.items():
                     model_rel = MetaModel.classes_dict[v[0]](new_instance=False)
-                    for field, val in zip(self.fields, row):
+                    for field, val in zip(model_rel.fields, row):
                         setattr(model_rel, field, val)
                     setattr(model, k, model_rel)
-                    row = row[len(model_rel.fields)-1:]
-                self._related_data = None
+                    row = row[len(model_rel.fields):]
             result.append(model)
+        self._related_data = None
         return result
 
     def filter(self, expression: Expression = None, **kwargs):
@@ -43,8 +51,6 @@ class Manager:
         return self
 
     def all(self) -> list:
-        q = Query()
-        self._q = q.SELECT(*self.fields).FROM(self.model_name)
         return self._fetch()
 
     def get(self, expression: Expression = None, **kwargs) -> Any:

@@ -33,7 +33,7 @@ class FieldBase:
         self._nullable = nullable
         self._defaults = defaults
         self.foreign_key = foreign_key
-        self.unique = unique
+        self._unique = unique
         self.placeholder = placeholder
         self.verbose_name = verbose_name
         self.choices = choices
@@ -79,7 +79,7 @@ class Field(FieldBase):
             self.foreign_key = f'{model}({field})'
         if not self._nullable:
             self.type += ' NOT NULL'
-        if self.unique:
+        if self._unique:
             self.type += ' UNIQUE'
         return self.type
 
