@@ -20,5 +20,3 @@ class RequestLineHeadersParse:
             k: str = k.replace('-', '_')
             headers_dict.update({k.upper(): v})
         return headers_dict
-
-

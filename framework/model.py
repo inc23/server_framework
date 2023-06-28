@@ -23,6 +23,9 @@ class Post(BaseModel):
     created_at = DateField(defaults=datetime.utcnow)
     is_publish = BoolField(defaults=False)
 
+    def __str__(self):
+        return f'{self.title}'
+
 
 class OneTable(BaseModel):
     one = FloatField(defaults=100000000000)
@@ -33,5 +36,3 @@ class OneTable(BaseModel):
 class TwoTable(BaseModel):
     one2 = IntField(foreign_key='onetable.id')
     user = IntField(nullable=False, foreign_key='user.id')
-
-

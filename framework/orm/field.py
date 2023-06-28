@@ -31,7 +31,7 @@ class FieldBase:
             unique: bool = False,
             verbose_name: str | None = None,
             placeholder: str | None = None,
-            choices: List [Tuple[Any, str]] | None = None
+            choices: List[Tuple[Any, str]] | None = None
     ):
         self._nullable = nullable
         self._defaults = defaults

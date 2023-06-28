@@ -21,7 +21,6 @@ def redirect(request: Request, view: str) -> Response:
 
 
 class View:
-
     template_name: str | None = None
     extra_context: dict | None = None
 
@@ -38,7 +37,7 @@ class View:
         body = build_template(request, self.context, self.template_name)
         return Response(request=request, body=body)
 
-    def post(self, request: Request, *args, **kwargs) ->Response:
+    def post(self, request: Request, *args, **kwargs) -> Response:
         pass
 
     def run(self, method, request) -> Response:
@@ -53,7 +52,6 @@ class View:
 
 
 class ListView(View):
-
     model_class: Type[BaseModel]
     name_in_template: str = 'model'
 
@@ -64,7 +62,6 @@ class ListView(View):
 
 
 class DetailView(View):
-
     model_class: Type[BaseModel]
     name_in_template: str = 'model'
 

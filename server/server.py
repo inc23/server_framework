@@ -67,4 +67,3 @@ class Server:
             except Exception:
                 traceback.print_exc()
                 continue
-

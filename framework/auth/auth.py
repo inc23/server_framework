@@ -20,6 +20,3 @@ def login(request: Request, user: User) -> None:
     }
     jwt = create_jwt_token(header_jwt, payload_jwt)
     request.extra['jwt'] = jwt
-
-
-

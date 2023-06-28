@@ -20,4 +20,3 @@ class Response:
     def create_response(self, body: bytes = b'') -> bytes:
         content = [self._start_line, self._headers, b'\r\n' if body else b'', body]
         return b''.join(content)
-

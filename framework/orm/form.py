@@ -42,7 +42,7 @@ class BaseForm:
                 is_valid = False
                 self._get_result_dict.update(
                     {f'{k}_label': f'<label for="{k}" style="color: red;"> {e} </label>'})
-            except KeyError as e:
+            except KeyError:
                 is_valid = False
                 self._get_result_dict.update(
                     {f'{k}_label': f'<label for="{k}" style="color: red;"> {k} cant be empty</label>'})
@@ -101,4 +101,3 @@ class BaseForm:
             setattr(self._obj, key, value)
         else:
             super(BaseForm, self).__setattr__(key, value)
-
