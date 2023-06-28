@@ -37,6 +37,8 @@ class FieldBase:
         self.placeholder = placeholder
         self.verbose_name = verbose_name
         self.choices = choices
+        # if choices:
+
 
     def __set_name__(self, owner, name):
         self.name = name
@@ -171,28 +173,25 @@ class EmailField(TextField):
 
 
 class DateField(Field):
-    type = 'REAL'
+    type = 'TEXT'
     html_type = 'date'
 
-    def __set__(self, obj, value: datetime) -> None:
+    def __set__(self, obj, value: datetime | str) -> None:
+        print(value)
         if self._defaults is not None:
             if isinstance(value, datetime):
-                obj.value_fields_dict[self.name] = value.timestamp()
-            elif isinstance(value, float):
-                obj.value_fields_dict[self.name] = datetime.fromtimestamp(
-                    value)
+                obj.value_fields_dict[self.name] = str(value.isoformat())
+            elif isinstance(value, str):
+                try:
+                    datetime.fromisoformat(value)
+                except ValueError:
+                    f'field {self.name} in {obj.model_name} have to be string in iso format'
+                else:
+                    obj.value_fields_dict[self.name] = value
             else:
                 raise ValueError(
-                    f'field {self.name} in {obj.model_name} have to be datetime'
+                    f'field {self.name} in {obj.model_name} have to be datetime or string'
                     f' but got {type(value)}')
-
-    def __get__(self, obj, owner):
-        if obj is None:
-            return self
-        time = super(DateField, self).__get__(obj, owner)
-        if isinstance(time, datetime):
-            obj.value_fields_dict[self.name] = datetime.timestamp(time)
-        return time
 
 
 class BoolField(IntField):

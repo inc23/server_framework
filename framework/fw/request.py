@@ -17,9 +17,9 @@ class Dict(dict):
 
 class Request:
 
-    def __init__(self, environ: dict, settings: dict):
+    def __init__(self, environ: dict, setting: dict):
         self.environ = environ
-        self.settings = settings
+        self.settings = setting
         self._build_get_dict(environ['QUERY_STRING'])
         self._build_post_dict(environ['wsgi.input'])
         self.extra = dict()
@@ -41,7 +41,7 @@ class Request:
             for val in data.value:
                 if not val.filename:
                     v = val.file.read()
-                    if v:
+                    if v and val.name not in self.POST:
                         self.POST.update({val.name: [v]})
                 else:
                     file_data = val.file.read()

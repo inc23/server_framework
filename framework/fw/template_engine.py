@@ -123,10 +123,10 @@ class IfBlock:
 class Engine:
 
     def __init__(self, base_dir: str, template_dir: str):
-        self.template_dir_path = os.path.join(base_dir, template_dir)
+        self._template_dir_path = os.path.join(base_dir, template_dir)
 
     def _get_template_as_string(self, template_name: str) -> str:
-        template_path = os.path.join(self.template_dir_path, template_name)
+        template_path = os.path.join(self._template_dir_path, template_name)
         if not os.path.isfile(template_path):
             raise Exception('template is not file')
         with open(template_path, encoding='utf-8') as file:
