@@ -1,4 +1,4 @@
-from .base_model import BaseModel
+from .base_model import BaseModel, MetaModel
 from typing import Type
 from .field import BoolField, ImageField
 
@@ -19,10 +19,10 @@ class BaseForm:
 
     def __call__(self, post_dict: dict | None = None):
         if post_dict is None:
-            self._build_dict()
+            self._build_dict_with_html()
         else:
             self._post_dict = post_dict
-            self._build_dict()
+            self._build_dict_with_html()
             self._get_post_dict()
             if not self._obj:
                 self._obj = self.model_class()
@@ -56,29 +56,43 @@ class BaseForm:
                     with open(path, 'wb') as f:
                         f.write(file)
 
-    def _build_dict(self) -> None:
+    def _build_dict_with_html(self) -> None:
         for k, v in self.fields.items():
             if k in self.include_field:
-                placeholder = f'placeholder="input {v.placeholder}"' if v.placeholder else ''
                 if self._obj:
                     value = str(getattr(self._obj, k))
                 elif self._post_dict:
                     value = self._post_dict.get(k, [''])[0] if not isinstance(v, ImageField) else ''
                 else:
                     value = ''
-                if isinstance(v, BoolField):
-                    checked = 'checked' if value == '1' else ''
-                    text = f'<input type="{v.html_type}" {checked} id="{k}" name="{k}" value="1">\n' \
-                           f'<input type="hidden" name="{k}" value="0">'
-                else:
-                    text = f'<input type="{v.html_type}" id="{k}" name="{k}" value="{value}" {placeholder}><br><br>'
-                label_text = f'<label for="{k}">{v.verbose_name}</label>'
+                text, label_text = self._build_html_for_field(k, v, value)
                 self._get_result_dict.update(
                     {
                      f'{k}_label': label_text,
                      k: text
                     }
                 )
+
+    @staticmethod
+    def _build_html_for_field(name, field, value):
+        placeholder = f'placeholder="input {field.placeholder}"' if field.placeholder else ''
+        label_text = f'<label for="{name}">{field.verbose_name}</label>'
+        if isinstance(field, BoolField):
+            checked = 'checked' if value == '1' else ''
+            text = f'<input type="{field.html_type}" {checked} id="{name}" name="{name}" value="1">\n' \
+                   f'<input type="hidden" name="{name}" value="0">'
+        elif field.foreign_key:
+            print(field.foreign_key)
+            foreign_model_name, foreign_field = field.foreign_key.split('.')
+            foreign_model: BaseModel = MetaModel.classes_dict[foreign_model_name]
+            text = f'<select name="{name}"id="{name}">\n'
+            for obj in foreign_model.objects.all():
+                text += f'<option value="{getattr(obj, foreign_field)}"> {obj} </option>\n'
+            text += '</select>'
+
+        else:
+            text = f'<input type="{field.html_type}" id="{name}" name="{name}" value="{value}" {placeholder}><br><br>'
+        return text, label_text
 
     @property
     def as_p(self) -> str:

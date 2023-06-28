@@ -1,5 +1,5 @@
 import re
-from typing import Any, Callable
+from typing import Any, Callable, List, Tuple
 from framework.auth.security import get_password_hash
 from datetime import datetime
 
@@ -19,6 +19,9 @@ class Expression:
 
 
 class FieldBase:
+    check_type = None
+    type = None
+    html_type = None
 
     def __init__(
             self,
@@ -28,7 +31,7 @@ class FieldBase:
             unique: bool = False,
             verbose_name: str | None = None,
             placeholder: str | None = None,
-            choices: tuple | None = None
+            choices: List [Tuple[Any, str]] | None = None
     ):
         self._nullable = nullable
         self._defaults = defaults
@@ -37,8 +40,6 @@ class FieldBase:
         self.placeholder = placeholder
         self.verbose_name = verbose_name
         self.choices = choices
-        # if choices:
-
 
     def __set_name__(self, owner, name):
         self.name = name
@@ -71,14 +72,8 @@ class FieldBase:
 
 
 class Field(FieldBase):
-    check_type = None
-    type = None
-    html_type = None
 
     def get_line(self) -> str:
-        if self.foreign_key is not None:
-            model, field = self.foreign_key.split('.')
-            self.foreign_key = f'{model}({field})'
         if not self._nullable:
             self.type += ' NOT NULL'
         if self._unique:

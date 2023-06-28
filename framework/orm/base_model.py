@@ -69,7 +69,8 @@ class CreateTable:
     def _create_foreign_key_line(field: dict) -> Generator:
         for name, field in field.items():
             if field.foreign_key is not None:
-                yield f'\r\n\tFOREIGN KEY ({name}) REFERENCES {field.foreign_key}'
+                model, field = field.foreign_key.split('.')
+                yield f'\r\n\tFOREIGN KEY ({model}) REFERENCES {model}({field})'
 
 
 class BaseModel(metaclass=MetaModel):
