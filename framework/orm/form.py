@@ -1,5 +1,5 @@
 from .base_model import BaseModel, MetaModel
-from typing import Type
+from typing import Type, Tuple
 from .field import BoolField, ImageField
 
 
@@ -74,7 +74,7 @@ class BaseForm:
                 )
 
     @staticmethod
-    def _build_html_for_field(name, field, value):
+    def _build_html_for_field(name, field, value) -> Tuple[str, str]:
         placeholder = f'placeholder="input {field.placeholder}"' if field.placeholder else ''
         label_text = f'<label for="{name}">{field.verbose_name}</label>'
         if isinstance(field, BoolField):
@@ -82,14 +82,12 @@ class BaseForm:
             text = f'<input type="{field.html_type}" {checked} id="{name}" name="{name}" value="1">\n' \
                    f'<input type="hidden" name="{name}" value="0">'
         elif field.foreign_key:
-            print(field.foreign_key)
             foreign_model_name, foreign_field = field.foreign_key.split('.')
             foreign_model: BaseModel = MetaModel.classes_dict[foreign_model_name]
             text = f'<select name="{name}"id="{name}">\n'
             for obj in foreign_model.objects.all():
                 text += f'<option value="{getattr(obj, foreign_field)}"> {obj} </option>\n'
             text += '</select>'
-
         else:
             text = f'<input type="{field.html_type}" id="{name}" name="{name}" value="{value}" {placeholder}><br><br>'
         return text, label_text
