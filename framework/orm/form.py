@@ -81,12 +81,17 @@ class BaseForm:
             checked = 'checked' if value == '1' else ''
             text = f'<input type="{field.html_type}" {checked} id="{name}" name="{name}" value="1">\n' \
                    f'<input type="hidden" name="{name}" value="0">'
-        elif field.foreign_key:
+        elif field.foreign_key and not field.choices:
             foreign_model_name, foreign_field = field.foreign_key.split('.')
             foreign_model: BaseModel = MetaModel.classes_dict[foreign_model_name]
             text = f'<select name="{name}"id="{name}">\n'
             for obj in foreign_model.objects.all():
                 text += f'<option value="{getattr(obj, foreign_field)}"> {obj} </option>\n'
+            text += '</select>'
+        elif field.choices:
+            text = f'<select name="{name}"id="{name}">\n'
+            for val, val_name in field.choices:
+                text += f'<option value="{val}"> {val_name} </option>\n'
             text += '</select>'
         else:
             text = f'<input type="{field.html_type}" id="{name}" name="{name}" value="{value}" {placeholder}><br><br>'
