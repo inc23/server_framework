@@ -1,6 +1,9 @@
+from urllib.parse import parse_qs
+
 from .base_model import BaseModel, MetaModel
 from typing import Type, Tuple
 from .field import BoolField, ImageField
+from ..fw.request import Request
 
 
 class BaseForm:
@@ -8,10 +11,12 @@ class BaseForm:
     model_class: Type[BaseModel] | None = None
     include_field: tuple | str = 'all'
 
-    def __init__(self, obj: BaseModel | None = None):
+    def __init__(self, request: Request, obj: BaseModel | None = None):
+        self._request = request
         self._post_resul_dict = dict()
         self._get_result_dict = dict()
         self._post_dict = None
+        self.csrf = self._get_csrf_token()
         self._obj = obj
         self.fields = self.model_class.fields
         if self.include_field == 'all':
@@ -35,6 +40,8 @@ class BaseForm:
 
     def is_valid(self) -> bool:
         is_valid = True
+        if self._post_dict['csrf_token'][0] != self._request.csrf_token:
+            is_valid = False
         for k in self.include_field:
             try:
                 setattr(self._obj, k, self._post_resul_dict[k])
@@ -43,9 +50,15 @@ class BaseForm:
                 self._get_result_dict.update(
                     {f'{k}_label': f'<label for="{k}" style="color: red;"> {e} </label>'})
             except KeyError:
-                is_valid = False
+                if not self.fields.get(k).blank:
+                    is_valid = False
+                    self._get_result_dict.update(
+                            {f'{k}_label': f'<label for="{k}" style="color: red;"> {k} cant be empty</label>'})
+            if self.model_class.fields[k].unique \
+                    and self.model_class.objects.get(getattr(self.model_class, k) == self._post_resul_dict.get(k)):
                 self._get_result_dict.update(
-                    {f'{k}_label': f'<label for="{k}" style="color: red;"> {k} cant be empty</label>'})
+                    {f'{k}_label': f'<label for="{k}" style="color: red;"> {k} have to be unique</label>'})
+                is_valid = False
         return is_valid
 
     def save(self, commit: bool = True) -> None:
@@ -100,6 +113,13 @@ class BaseForm:
     @property
     def as_p(self) -> str:
         return '\n'.join(self._get_result_dict.values()) + '<br><br>'
+
+    def _get_csrf_token(self):
+        csrf = self._request.csrf_token
+        return f'<input type ="hidden" name="csrf_token" value={csrf}>'
+
+    def __getattr__(self, item):
+        return self._get_result_dict.get(item)
 
     def __setattr__(self, key, value):
         if key in self.include_field:

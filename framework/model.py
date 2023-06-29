@@ -16,9 +16,9 @@ class User(BaseModel):
 
 
 class Post(BaseModel):
-    title = TextField(nullable=False, verbose_name='title')
+    title = TextField(nullable=True, blank=True, verbose_name='title')
     text = TextField(nullable=False, verbose_name='text')
-    image = ImageField(nullable=True, verbose_name='image')
+    image = ImageField(nullable=True, blank=True, verbose_name='image')
     author = IntField(nullable=False, foreign_key='user.id')
     created_at = DateField(defaults=datetime.utcnow)
     is_publish = BoolField(defaults=False)

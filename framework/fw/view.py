@@ -25,8 +25,12 @@ class View:
     extra_context: dict | None = None
 
     def __init__(self, *args, **kwargs):
-        self.context = self.get_context_data()
+        self.context = None
         self.request = None
+
+    def set_param(self, request):
+        self.request = request
+        self.context = self.get_context_data()
 
     def get_context_data(self, **kwargs) -> dict:
         if self.extra_context:
@@ -41,7 +45,7 @@ class View:
         pass
 
     def run(self, method, request) -> Response:
-        self.request = request
+        self.set_param(request)
         if hasattr(self, method):
             return getattr(self, method)(request)
         raise MethodError
@@ -81,16 +85,20 @@ class CreateView(View):
     redirect_page: str | None = None
 
     def __init__(self, *args, **kwargs):
-        self.form = self.form_class()
         super(CreateView, self).__init__(*args, **kwargs)
 
     def get_context_data(self, form: BaseForm | None = None, **kwargs) -> dict:
         context = super(CreateView, self).get_context_data(**kwargs)
-        context[self.name_in_template] = form if form else self.form()
+        context[self.name_in_template] = form if form else self.get_form()
         return context
 
+    @property
+    def get_form(self):
+        form = self.form_class(self.request)
+        return form
+
     def post(self, request: Request, *args, **kwargs) -> Response:
-        form = self.form(request.POST)
+        form = self.get_form(request.POST)
         if form.is_valid():
             return self.form_valid(form)
         return self.form_invalid(form)
@@ -118,7 +126,7 @@ class UpdateView(CreateView):
 
     @property
     def get_form(self) -> BaseForm:
-        form = self.form_class(obj=self.get_object())
+        form = self.form_class(request=self.request, obj=self.get_object())
         return form
 
     def get_object(self) -> BaseModel:
@@ -130,7 +138,8 @@ class UpdateView(CreateView):
         form = self.get_form(request.POST)
         if form.is_valid():
             form.save()
-        return redirect(self.request, self.redirect_page)
+            return redirect(self.request, self.redirect_page)
+        return self.form_invalid(form)
 
 
 class Page404(View):

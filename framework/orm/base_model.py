@@ -8,16 +8,15 @@ class MetaModel(type):
 
     def __new__(mcs, model_name: str, parents: tuple, attrs: dict):
         fields = dict()
-        for parent in parents:
-            if hasattr(parent, 'fields'):
-                fields.update(parent.fields)
+        new_attrs = {'id': IdField(nullable=True)}
+        new_attrs.update(attrs)
         related_fields = dict()
-        for k, v in attrs.items():
+        for k, v in new_attrs.items():
             if isinstance(v, Field):
                 fields.update({k: v})
                 if v.foreign_key:
                     related_fields.update({k: v.foreign_key.split('.')})
-        model = super(MetaModel, mcs).__new__(mcs, model_name, parents, attrs)
+        model = super(MetaModel, mcs).__new__(mcs, model_name, parents, new_attrs)
         name = attrs['__qualname__'].lower()
         model.fields = fields
         model.model_name = attrs['__qualname__'].lower()
@@ -76,7 +75,7 @@ class CreateTable:
 
 class BaseModel(metaclass=MetaModel):
 
-    id = IdField(nullable=True)
+    id = None
 
     def __init__(self, new_instance: bool = True, **kwargs):
         super(BaseModel, self).__init__()

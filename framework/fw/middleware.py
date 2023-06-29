@@ -1,3 +1,4 @@
+import secrets
 from urllib.parse import parse_qs
 from .request import Request
 from .response import Response
@@ -36,4 +37,24 @@ class Session(Middleware):
                 request.extra['user'] = User.objects.get(User.id == user_id)
 
 
+class CSRFToken(Middleware):
+
+    def to_response(self, response: Response):
+        if response.request.csrf_token:
+            cookies = response.request.environ.get('COOKIE')
+            if not parse_qs(cookies).get('csrftoken'):
+                response.headers.update(
+                    {'Set-Cookie': f'csrftoken={response.request.csrf_token}; Max-Age=31449600; Path=/; Secure; SameSite=Lax'}
+                )
+
+    def to_request(self, request: Request):
+        cookies = request.environ.get('COOKIE')
+        csrf = parse_qs(cookies).get('csrftoken')
+        if csrf is not None:
+            request.extra['csrf_token'] = csrf[0]
+        else:
+            request.extra['csrf_token'] = secrets.token_hex(16)
+
+
 middlewares = [Session]
+

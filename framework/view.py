@@ -12,6 +12,7 @@ class Login(View):
         email = request.POST['email']
         password = request.POST['password']
         user = authenticate(email, password)
+        print(user)
         if user:
             login(request, user)
         return redirect(request, 'login')

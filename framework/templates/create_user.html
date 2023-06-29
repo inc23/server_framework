@@ -50,6 +50,7 @@ div {
 <H1> You have to login </H1>
 <div>
 <form method="post">
+    {{ form.csrf }}
     {{ form.as_p }}
     <button type="submit">Create</button><br>
 </form>

@@ -27,6 +27,7 @@ class FieldBase:
             self,
             foreign_key: None | str = None,
             nullable: bool = False,
+            blank: bool = False,
             defaults: Any = None,
             unique: bool = False,
             verbose_name: str | None = None,
@@ -34,9 +35,10 @@ class FieldBase:
             choices: List[Tuple[Any, str]] | None = None
     ):
         self._nullable = nullable
+        self.blank = blank
         self._defaults = defaults
         self.foreign_key = foreign_key
-        self._unique = unique
+        self.unique = unique
         self.placeholder = placeholder
         self.verbose_name = verbose_name
         self.choices = choices
@@ -76,7 +78,7 @@ class Field(FieldBase):
     def get_line(self) -> str:
         if not self._nullable:
             self.type += ' NOT NULL'
-        if self._unique:
+        if self.unique:
             self.type += ' UNIQUE'
         return self.type
 
@@ -86,7 +88,7 @@ class Field(FieldBase):
                 try:
                     value = self.check_type(value)
                 except TypeError:
-                    raise ValueError(
+                    raise TypeError(
                         f'field {self.name} in {obj.model_name} have to be {self.check_type.__qualname__}'
                         f' but got {type(value)}')
         return value
@@ -172,7 +174,6 @@ class DateField(Field):
     html_type = 'date'
 
     def __set__(self, obj, value: datetime | str) -> None:
-        print(value)
         if self._defaults is not None:
             if isinstance(value, datetime):
                 obj.value_fields_dict[self.name] = str(value.isoformat())
