@@ -40,16 +40,16 @@ class Q:
 class BaseExp:
     name = None
 
-    def add(self, *args):
+    def add(self, *args) -> None:
         raise NotImplementedError
 
     def __bool__(self):
         raise NotImplementedError
 
-    def _line(self):
+    def _line(self) -> str:
         raise NotImplementedError
 
-    def definition(self):
+    def definition(self) -> str:
         return f'{self.name}\n\t{self._line()}\n'
 
 
@@ -218,10 +218,10 @@ class Join(BaseExp):
     def __init__(self):
         self._data = []
 
-    def add(self, table_name: str, related_tuple: Tuple[str, str]):
+    def add(self, table_name: str, related_tuple: Tuple[str, str]) -> None:
         self._data.append((table_name, related_tuple))
 
-    def _line(self):
+    def _line(self) -> str:
         for data in self._data:
             table_name, related_list = data
             field, foreign_table_field = related_list
@@ -296,5 +296,5 @@ class Query:
             if self._data[k]:
                 yield self._data[k].definition()
 
-    def __str__(self) -> str:
+    def __str__(self):
         return ''.join(self._lines())

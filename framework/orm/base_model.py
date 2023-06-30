@@ -53,20 +53,20 @@ class CreateTable:
             query_list.append(query)
         return query_list
 
-    def _create_lines(self, fields: dict) -> Generator:
+    def _create_lines(self, fields: dict) -> str:
         yield ',\r\n\t'.join(self._create_line(fields))
         foreign_key_line = ',\t'.join(self._create_foreign_key_line(fields))
         if foreign_key_line:
             yield foreign_key_line
 
     @staticmethod
-    def _create_line(field: dict) -> Generator:
+    def _create_line(field: dict) -> Generator[str, None, None]:
         for name, field in field.items():
             line = f'{name} {field.get_line()}'
             yield line
 
     @staticmethod
-    def _create_foreign_key_line(field: dict) -> Generator:
+    def _create_foreign_key_line(field: dict) -> Generator[str, None, None]:
         for name, field in field.items():
             if field.foreign_key is not None:
                 model, field = field.foreign_key.split('.')

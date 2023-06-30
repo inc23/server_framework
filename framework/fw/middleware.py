@@ -29,7 +29,8 @@ class Session(Middleware):
         cookies = request.environ.get('COOKIE')
         if not cookies:
             return
-        jwt = parse_qs(cookies).get('jwt')
+        jwt = parse_qs(cookies, separator='; ').get('jwt')
+        print(jwt)
         if jwt:
             payload = check_jwt(jwt[0])
             if payload:
@@ -56,5 +57,5 @@ class CSRFToken(Middleware):
             request.extra['csrf_token'] = secrets.token_hex(16)
 
 
-middlewares = [Session]
+middlewares = [Session, CSRFToken]
 

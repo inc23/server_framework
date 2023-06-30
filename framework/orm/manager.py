@@ -20,7 +20,7 @@ class Manager:
         q = Query()
         self._q = q.SELECT(*self.fields).FROM(self.model_name)
 
-    def _get_db_result(self):
+    def _get_db_result(self) -> list:
         query = str(self._q)
         if settings.echo_sql:
             print(self._q)
