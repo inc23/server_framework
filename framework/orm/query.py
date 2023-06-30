@@ -138,18 +138,27 @@ class Where(BaseExp):
 
     def __init__(self):
         self._q = None
+        self.exp = None
+        self.exp_list = []
 
     def add(self, exp: str = AND, expression: Expression = None, **kwargs) -> None:
-        if expression is None:
-            self._q = Q(exp, **kwargs)
-        else:
-            self._q = str(expression)
+        self.exp = exp
+        if expression:
+            self.exp_list.append(str(expression))
+        if kwargs:
+            self.exp_list.append(str(Q(exp, **kwargs)))
+
+
+        # if expression is None:
+        #     self._q = Q(exp, **kwargs)
+        # else:
+        #     self._q = str(expression)
 
     def _line(self) -> str:
-        return str(self._q)
+        return self.exp.join(self.exp_list)
 
     def __bool__(self):
-        return bool(self._q)
+        return bool(self.exp_list)
 
 
 class Insert(BaseExp):

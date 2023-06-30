@@ -19,7 +19,7 @@ class Post(BaseModel):
     title = TextField(nullable=True, blank=True, verbose_name='title')
     text = TextField(nullable=False, verbose_name='text')
     image = ImageField(nullable=True, blank=True, verbose_name='image')
-    author = IntField(nullable=False, foreign_key='user.id')
+    author = IntField(nullable=False, foreign_key=User.id)
     created_at = DateField(defaults=datetime.utcnow)
     is_publish = BoolField(defaults=False)
 

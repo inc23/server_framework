@@ -5,13 +5,14 @@ from urllib.parse import parse_qs
 from framework import settings
 
 
-class Dict(dict):
+class PostDict(dict):
 
     def __getitem__(self, item):
         try:
-            result = super(Dict, self).__getitem__(item)
+            result = super(PostDict, self).__getitem__(item)
         except KeyError:
             return False
+        print(result[0])
         return result[0]
 
 
@@ -28,7 +29,7 @@ class Request:
         return self.extra.get(item)
 
     def _build_get_dict(self, param: str) -> None:
-        self.GET = Dict(parse_qs(param))
+        self.GET = PostDict(parse_qs(param))
 
     def _build_post_dict(self, param: io.BytesIO) -> None:
         if 'multipart/form-data' in self.environ.get('CONTENT_TYPE', ''):
@@ -50,4 +51,5 @@ class Request:
                     self.POST['file_to_upload'].update({field_path: file_data})
         else:
             param = param.read().decode('utf-8')
-            self.POST = Dict(parse_qs(param))
+            self.POST = (parse_qs(param))
+        print(self.POST)

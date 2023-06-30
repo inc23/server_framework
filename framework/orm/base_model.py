@@ -1,6 +1,7 @@
-from typing import Generator
+from typing import Generator, Type
 from .field import Field, IdField
 from .connector import connector
+from .queryset import QuerySet
 
 
 class MetaModel(type):
@@ -21,14 +22,16 @@ class MetaModel(type):
         model.fields = fields
         model.model_name = attrs['__qualname__'].lower()
         model.related_fields = related_fields
-        from .manager import Manager
-        model.objects = Manager(model)
         if name != 'basemodel':
             mcs.classes_dict.update({name: model})
         return model
 
+    @property
+    def objects(cls) -> QuerySet:
+        return QuerySet(cls)
+
     @classmethod
-    def create_tables(mcs):
+    def create_tables(mcs) -> None:
         CreateTable(mcs.classes_dict)
 
 
@@ -86,4 +89,4 @@ class BaseModel(metaclass=MetaModel):
                 setattr(self, key, kwargs.get(key, None))
 
     def save(self) -> None:
-        self.objects.save(self.value_fields_dict, self)
+        self.__class__.objects.save(self.value_fields_dict, self)

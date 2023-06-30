@@ -37,7 +37,7 @@ class FieldBase:
         self._nullable = nullable
         self.blank = blank
         self._defaults = defaults
-        self.foreign_key = foreign_key
+        self.foreign_key = str(foreign_key) if foreign_key is not None else None
         self.unique = unique
         self.placeholder = placeholder
         self.verbose_name = verbose_name
@@ -111,6 +111,9 @@ class Field(FieldBase):
             else:
                 raise ValueError(f'field {obj.__class__.__qualname__}.{self.name} cant be null')
         return obj.value_fields_dict[self.name]
+
+    def __str__(self):
+        return f'{self._owner.model_name}.{self.name}'
 
 
 class IdField(Field):

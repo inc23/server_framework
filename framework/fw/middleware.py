@@ -30,7 +30,6 @@ class Session(Middleware):
         if not cookies:
             return
         jwt = parse_qs(cookies, separator='; ').get('jwt')
-        print(jwt)
         if jwt:
             payload = check_jwt(jwt[0])
             if payload:

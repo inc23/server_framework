@@ -42,6 +42,7 @@ class BaseForm:
         is_valid = True
         if self._post_dict['csrf_token'][0] != self._request.csrf_token:
             is_valid = False
+            print(' invalid csrf token')
         for k in self.include_field:
             try:
                 setattr(self._obj, k, self._post_resul_dict[k])
@@ -64,7 +65,7 @@ class BaseForm:
     def save(self, commit: bool = True) -> None:
         if commit:
             self._obj.save()
-            if self._post_dict['file_to_upload']:
+            if self._post_dict.get('file_to_upload', False):
                 for path, file in self._post_dict['file_to_upload'].items():
                     with open(path, 'wb') as f:
                         f.write(file)
@@ -98,7 +99,7 @@ class BaseForm:
             foreign_model_name, foreign_field = field.foreign_key.split('.')
             foreign_model: BaseModel = MetaModel.classes_dict[foreign_model_name]
             text = f'<select name="{name}"id="{name}">\n'
-            for obj in foreign_model.objects.all():
+            for obj in foreign_model.objects:
                 text += f'<option value="{getattr(obj, foreign_field)}"> {obj} </option>\n'
             text += '</select>'
         elif field.choices:

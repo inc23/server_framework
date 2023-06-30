@@ -61,7 +61,7 @@ class ListView(View):
 
     def get_context_data(self, **kwargs) -> dict:
         context = super(ListView, self).get_context_data(**kwargs)
-        context[self.name_in_template] = self.model_class.objects.all()
+        context[self.name_in_template] = self.model_class.objects
         return context
 
 
