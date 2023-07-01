@@ -53,68 +53,35 @@ class BaseExp:
         return f'{self.name}\n\t{self._line()}\n'
 
 
-class Select(BaseExp):
+class Base(BaseExp):
+
+    def __init__(self):
+        self._data = []
+
+    def add(self, *args) -> None:
+        self._data.extend(args)
+
+    def _line(self) -> str:
+        return ', '.join(self._data)
+
+    def __bool__(self):
+        return bool(self._data)
+
+
+class Select(Base):
     name = 'SELECT'
 
-    def __init__(self):
-        self._data = []
 
-    def add(self, *args) -> None:
-        self._data.extend(args)
-
-    def _line(self) -> str:
-        return ', '.join(self._data)
-
-    def __bool__(self):
-        return bool(self._data)
-
-
-class SelectD(BaseExp):
+class SelectD(Base):
     name = 'SELECT DISTINCT'
 
-    def __init__(self):
-        self._data = []
 
-    def add(self, *args) -> None:
-        self._data.extend(args)
-
-    def _line(self) -> str:
-        return ', '.join(self._data)
-
-    def __bool__(self):
-        return bool(self._data)
-
-
-class From(BaseExp):
+class From(Base):
     name = 'FROM'
 
-    def __init__(self):
-        self._data = []
 
-    def add(self, *args) -> None:
-        self._data.extend(args)
-
-    def _line(self) -> str:
-        return ', '.join(self._data)
-
-    def __bool__(self):
-        return bool(self._data)
-
-
-class Update(BaseExp):
+class Update(Base):
     name = 'UPDATE'
-
-    def __init__(self):
-        self._data = []
-
-    def add(self, *args) -> None:
-        self._data.extend(args)
-
-    def _line(self) -> str:
-        return ', '.join(self._data)
-
-    def __bool__(self):
-        return bool(self._data)
 
 
 class Set(BaseExp):
@@ -148,17 +115,15 @@ class Where(BaseExp):
         if kwargs:
             self.exp_list.append(str(Q(exp, **kwargs)))
 
-
-        # if expression is None:
-        #     self._q = Q(exp, **kwargs)
-        # else:
-        #     self._q = str(expression)
-
     def _line(self) -> str:
         return self.exp.join(self.exp_list)
 
     def __bool__(self):
         return bool(self.exp_list)
+
+
+class OrderBy(Base):
+    name = 'ORDER BY'
 
 
 class Insert(BaseExp):
@@ -184,20 +149,8 @@ class Insert(BaseExp):
         return ', '.join(self._data)
 
 
-class Values(BaseExp):
+class Values(Base):
     name = 'VALUES'
-
-    def __init__(self):
-        self._data = []
-
-    def add(self, *args) -> None:
-        self._data.extend(args)
-
-    def __bool__(self):
-        return bool(self._data)
-
-    def _line(self) -> str:
-        return ', '.join(self._data)
 
     def definition(self) -> str:
         items = ','.join(['?'] * len(self._data))
@@ -256,6 +209,7 @@ class Query:
             'delete': Delete(),
             'join': Join(),
             'where': Where(),
+            'order_by': OrderBy(),
             'insert': Insert(),
             'values': Values()}
 
@@ -273,6 +227,10 @@ class Query:
 
     def WHERE(self, expression: Expression = None, **kwargs):
         self._data['where'].add(expression=expression, **kwargs)
+        return self
+
+    def ORDER_BY(self, *args):
+        self._data['order_by'].add(*args)
         return self
 
     def INSERT(self, table, *args):

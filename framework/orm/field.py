@@ -115,6 +115,9 @@ class Field(FieldBase):
     def __str__(self):
         return f'{self._owner.model_name}.{self.name}'
 
+    def __neg__(self):
+        return f'{self.__str__()} DESC'
+
 
 class IdField(Field):
     type = 'INTEGER PRIMARY KEY AUTOINCREMENT'
