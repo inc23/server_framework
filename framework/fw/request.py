@@ -12,7 +12,6 @@ class PostDict(dict):
             result = super(PostDict, self).__getitem__(item)
         except KeyError:
             return False
-        print(result[0])
         return result[0]
 
 
@@ -52,4 +51,3 @@ class Request:
         else:
             param = param.read().decode('utf-8')
             self.POST = (parse_qs(param))
-        print(self.POST)

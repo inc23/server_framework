@@ -71,8 +71,9 @@ class QuerySet:
             q = self._get_select_related_query(q, *self._select_related_args)
         if self._is_filter:
             q = q.WHERE(self._expression, **self._filter_kwargs)
-        if self._order_by_data:
-            order_data = [str(item) for item in self._order_by_data]
+        order_data = self._order_by_data if self._order_by_data else self.model.order_by()
+        if order_data:
+            order_data = [str(item) for item in order_data]
             q = q.ORDER_BY(*order_data)
         return str(q)
 

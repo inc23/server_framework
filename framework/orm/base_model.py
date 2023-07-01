@@ -26,6 +26,10 @@ class MetaModel(type):
             mcs.classes_dict.update({name: model})
         return model
 
+    @staticmethod
+    def order_by():
+        return []
+
     @property
     def objects(cls) -> QuerySet:
         return QuerySet(cls)

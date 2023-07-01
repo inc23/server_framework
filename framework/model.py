@@ -11,6 +11,10 @@ class User(BaseModel):
     created_at = DateField(defaults=datetime.utcnow)
     is_admin = BoolField(defaults=False)
 
+    @classmethod
+    def order_by(cls):
+        return [User.last_name]
+
     def __str__(self):
         return f'{self.name} {self.last_name}'
 
@@ -25,6 +29,10 @@ class Post(BaseModel):
 
     def __str__(self):
         return f'{self.title}'
+
+    @classmethod
+    def order_by(cls):
+        return [-cls.id]
 
 
 class OneTable(BaseModel):

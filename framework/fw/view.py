@@ -55,27 +55,36 @@ class View:
         return Response(request=self.request, body=body)
 
 
-class ListView(View):
+class GenericView(View):
     model_class: Type[BaseModel]
     name_in_template: str = 'model'
+
+    def get_queryset(self):
+        queryset = self.model_class.objects
+        return queryset
+
+
+class ListView(GenericView):
 
     def get_context_data(self, **kwargs) -> dict:
         context = super(ListView, self).get_context_data(**kwargs)
-        context[self.name_in_template] = self.model_class.objects
+        context[self.name_in_template] = self.get_queryset()
         return context
 
 
-class DetailView(View):
-    model_class: Type[BaseModel]
-    name_in_template: str = 'model'
+class DetailView(GenericView):
 
     def __init__(self, instance_id):
         self.id = instance_id
         super(DetailView, self).__init__()
 
+    def get_queryset(self):
+        queryset = self.model_class.objects.get(self.model_class.id == self.id)
+        return queryset
+
     def get_context_data(self, **kwargs) -> dict:
         context = super(DetailView, self).get_context_data(**kwargs)
-        context[self.name_in_template] = self.model_class.objects.get(self.model_class.id == self.id)
+        context[self.name_in_template] = self.get_queryset()
         return context
 
 
