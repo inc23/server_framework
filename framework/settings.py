@@ -14,3 +14,5 @@ media_folder = 'media'
 static_folder = 'static'
 media = os.path.join(main_path, media_folder)
 static = os.path.join(main_path, static_folder)
+host = '127.0.0.1'
+port = 5000

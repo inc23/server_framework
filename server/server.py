@@ -5,17 +5,18 @@ from time import time
 from typing import Callable
 from .http_response import Response
 from .request_parse import RequestParser
+from framework import settings
 
 
 class Server:
 
-    def __init__(self, framework: Callable = None, host: str = 'localhost', port: int = 5000):
+    def __init__(self, framework: Callable = None):
         self._selector = selectors.DefaultSelector()
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._client_socket, self._addr = None, None
         self._framework = framework
-        self._host = host
-        self._port = port
+        self._host = settings.host
+        self._port = settings.port
         self._run_server()
         self._run_event_loop()
 

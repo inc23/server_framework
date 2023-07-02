@@ -1,7 +1,7 @@
 from .form import UserCreateForm, UserUpdateForm, PostCreateForm
 from .fw.view import View, Request, ListView, DetailView, redirect, CreateView, UpdateView
 from .auth.auth import authenticate, login
-from .model import User
+from .model import User, Post
 
 
 class Login(View):
@@ -48,3 +48,13 @@ class PostCreate(CreateView):
     extra_context = {'title': 'new post'}
     template_name = 'create_post.html'
     redirect_page = 'users'
+
+
+class PostList(ListView):
+    model_class = Post
+    template_name = 'posts.html'
+    extra_context = {'title': 'posts'}
+
+    def get_queryset(self):
+        queryset = Post.objects.select_related('author')
+        return queryset

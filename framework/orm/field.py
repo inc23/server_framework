@@ -1,5 +1,6 @@
 import re
 from typing import Any, Callable, List, Tuple
+from framework import settings
 from framework.auth.security import get_password_hash
 from datetime import datetime
 
@@ -139,6 +140,14 @@ class TextField(Field):
 
 class ImageField(TextField):
     html_type = 'file'
+
+    def __get__(self, obj, owner):
+        value = super(ImageField, self).__get__(obj, owner)
+        if value:
+            host = settings.host
+            port = f':{settings.port}' if settings.port != 80 else ''
+            value = f'http://{host}{port}/{obj.value_fields_dict[self.name]}'.replace('\\', '/')
+        return value
 
 
 class FloatField(Field):

@@ -45,8 +45,9 @@ class Request:
                         self.POST.update({val.name: [v]})
                 else:
                     file_data = val.file.read()
+                    field_path_for_db = os.path.join(settings.media_folder, val.filename)
                     field_path = os.path.join(settings.media, val.filename)
-                    self.POST.update({val.name: [val.filename]})
+                    self.POST.update({val.name: [field_path_for_db]})
                     self.POST['file_to_upload'].update({field_path: file_data})
         else:
             param = param.read().decode('utf-8')
