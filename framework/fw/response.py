@@ -29,7 +29,9 @@ class Headers:
 
 class Response:
 
-    def __init__(self, request: Request, status_code: int = 200, headers=None, body: str = ''):
+    def __init__(self, request: Request, status_code: int = 200, headers=None, body: str | bytes = '',
+                 is_file: bool = False):
+        self.is_file = is_file
         self.request = request
         self.status_code = status_code
         self.headers = Headers()
@@ -45,11 +47,22 @@ class Response:
         return self.extra.get(item)
 
     def _set_headers(self) -> None:
-        self.headers.update({
-            'Content-type': 'text/html; charset=utf-8',
-            "Content-Length": '0'
-        })
+        if self.is_file:
+            file_name = self.request.environ['PATH_INFO'].rsplit('/', maxsplit=1)
+            self.headers.update({
+                'Content-Type': 'application/octet-stream',
+                'Content-Disposition': f'attachment; filename="{file_name}"'
+            })
+
+        else:
+            self.headers.update({
+                'Content-Type': 'text/html; charset=utf-8',
+                "Content-Length": '0'
+            })
 
     def _set_body(self, body) -> None:
-        self.body = body.encode('utf-8')
-        self.headers.update({"Content-Length": str(len(self.body))})
+        if isinstance(body, str):
+            self.body = body.encode('utf-8')
+            self.headers.update({"Content-Length": str(len(self.body))})
+        else:
+            self.body = body

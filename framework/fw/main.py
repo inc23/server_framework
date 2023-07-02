@@ -5,6 +5,7 @@ from .response import Response
 from .urls import Url, start_urlpatterns
 from .middleware import Middleware
 from ..orm.base_model import MetaModel
+from .file_response import file_response
 
 
 class Framework:
@@ -19,17 +20,20 @@ class Framework:
         MetaModel.create_tables()
 
     def __call__(self, environ: dict, start_response: Callable) -> bytes:
-        view = self._get_view(environ)
         request = self._get_request(environ)
-        self._to_request(request)
-        response = self._get_response(environ, view, request)
-        self._to_response(response)
+        if environ['SEC_FETCH_DEST'] != 'document':
+            response = self._get_file_response(environ, request)
+        else:
+            view = self._get_view(environ)
+            self._to_request(request)
+            response = self._get_response(environ, view, request)
+            self._to_response(response)
         start_response(response.status_code, response.headers.items())
         return response.body
 
     @staticmethod
     def _prepare_url(url: str) -> tuple[str, str]:
-        url_param = url.split('/')
+        url_param = url.split('/', maxsplit=2)
         if len(url_param) == 3:
             _, url, arg = url_param
             return f'/{url}', arg
@@ -55,6 +59,11 @@ class Framework:
         method = environ['REQUEST_METHOD'].lower()
         return view.run(method, request)
 
+    @staticmethod
+    def _get_file_response(environ, request):
+        url = environ['PATH_INFO']
+        return file_response(request, url)
+
     def _to_response(self, response: Response) -> None:
         for middleware in self._middlewares:
             middleware().to_response(response)
@@ -62,5 +71,3 @@ class Framework:
     def _to_request(self, request: Request) -> None:
         for middleware in self._middlewares:
             middleware().to_request(request)
-
-

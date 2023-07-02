@@ -44,7 +44,8 @@ class CSRFToken(Middleware):
             cookies = response.request.environ.get('COOKIE')
             if not parse_qs(cookies).get('csrftoken'):
                 response.headers.update(
-                    {'Set-Cookie': f'csrftoken={response.request.csrf_token}; Max-Age=31449600; Path=/; Secure; SameSite=Lax'}
+                    {'Set-Cookie': f'csrftoken={response.request.csrf_token};'
+                                   f' Max-Age=31449600; Path=/; Secure; SameSite=Lax'}
                 )
 
     def to_request(self, request: Request):
@@ -57,4 +58,3 @@ class CSRFToken(Middleware):
 
 
 middlewares = [Session, CSRFToken]
-

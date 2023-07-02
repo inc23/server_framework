@@ -1,5 +1,3 @@
-from urllib.parse import parse_qs
-
 from .base_model import BaseModel, MetaModel
 from typing import Type, Tuple
 from .field import BoolField, ImageField

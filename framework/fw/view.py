@@ -1,4 +1,6 @@
+import os
 from typing import Type
+import framework.settings as settings
 from .exception import MethodError
 from .request import Request
 from .response import Response
@@ -24,7 +26,8 @@ class View:
     template_name: str | None = None
     extra_context: dict | None = None
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, arg: str | None = None):
+        self.arg = arg
         self.context = None
         self.request = None
 
