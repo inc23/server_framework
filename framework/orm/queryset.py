@@ -1,5 +1,5 @@
 from typing import Any
-from framework import settings
+from .. import settings
 from .connector import connector
 from .field import Expression
 from .query import Query

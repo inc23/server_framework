@@ -1,7 +1,8 @@
 import os
 
-
-settings = {
+host = '127.0.0.1'
+port = 5000
+template_settings = {
     'BASE_DIR': os.path.dirname(os.path.abspath(__file__)),
     'TEMPLATES_DIR': 'templates'
 }
@@ -14,5 +15,5 @@ media_folder = 'media'
 static_folder = 'static'
 media = os.path.join(main_path, media_folder)
 static = os.path.join(main_path, static_folder)
-host = '127.0.0.1'
-port = 5000
+from app.user.model import User
+user_model = User

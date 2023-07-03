@@ -1,4 +1,4 @@
-from typing import Generator, Type
+from typing import Generator
 from .field import Field, IdField
 from .connector import connector
 from .queryset import QuerySet
@@ -9,7 +9,9 @@ class MetaModel(type):
 
     def __new__(mcs, model_name: str, parents: tuple, attrs: dict):
         fields = dict()
-        new_attrs = {'id': IdField(nullable=True)}
+        new_attrs = dict()
+        for parent in parents:
+            new_attrs.update(parent.fields)
         new_attrs.update(attrs)
         related_fields = dict()
         for k, v in new_attrs.items():
@@ -82,7 +84,7 @@ class CreateTable:
 
 class BaseModel(metaclass=MetaModel):
 
-    id = None
+    id = IdField(nullable=True)
 
     def __init__(self, new_instance: bool = True, **kwargs):
         super(BaseModel, self).__init__()

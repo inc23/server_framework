@@ -25,6 +25,7 @@ class Server:
         self._server_socket.bind((self._host, self._port))
         self._server_socket.listen()
         self._selector.register(self._server_socket, selectors.EVENT_READ, self._accept_connection)
+        print(f'server start at http://{self._host}:{self._port}')
 
     def _accept_connection(self) -> None:
         if self._client_socket is not None:

@@ -1,7 +1,7 @@
 from framework.auth.security import verify_password
 from framework.auth.jwt import header_jwt, create_jwt_token
 from framework.fw.request import Request
-from framework.model import User
+from framework.settings import user_model as User
 
 
 def authenticate(email: str, password: str) -> User | None:

@@ -1,6 +1,4 @@
-import os
 from typing import Type
-import framework.settings as settings
 from .exception import MethodError
 from .request import Request
 from .response import Response
@@ -10,7 +8,7 @@ from ..orm.form import BaseForm
 
 
 def redirect(request: Request, view: str) -> Response:
-    from ..urls import urlpatterns
+    from app.urls import urlpatterns
     host = request.environ.get('HOST')
     url = None
     for path in urlpatterns:

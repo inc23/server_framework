@@ -3,7 +3,7 @@ from urllib.parse import parse_qs
 from .request import Request
 from .response import Response
 from framework.auth.jwt import check_jwt
-from framework.model import User
+from framework import settings
 
 
 class Middleware:
@@ -34,7 +34,8 @@ class Session(Middleware):
             payload = check_jwt(jwt[0])
             if payload:
                 user_id = payload.get('id')
-                request.extra['user'] = User.objects.get(User.id == user_id)
+                user = settings.user_model
+                request.extra['user'] = user.objects.get(user.id == user_id)
 
 
 class CSRFToken(Middleware):
