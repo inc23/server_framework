@@ -13,7 +13,7 @@ class PostCreate(CreateView):
 class PostList(ListView):
     model_class = Post
     template_name = 'posts.html'
-    extra_context = {'title': 'posts'}
+    extra_context = {'title': 'posts list'}
 
     def get_queryset(self):
         queryset = Post.objects.select_related('author')

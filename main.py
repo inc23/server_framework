@@ -1,5 +1,5 @@
 from server.server import Server
-from app.main import app
+from framework.main import app
 
 
 Server(framework=app)
