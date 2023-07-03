@@ -2,7 +2,7 @@ from typing import Callable, List, Type
 from .request import Request
 from .view import View, Page404
 from .response import Response
-from .urls import Url, start_urlpatterns
+from .urls import Url, start_urlpatterns, get_view_from_urlpatterns
 from .middleware import Middleware
 from ..orm.base_model import MetaModel
 from .file_response import file_response
@@ -31,20 +31,30 @@ class Framework:
         start_response(response.status_code, response.headers.items())
         return response.body
 
+    # @staticmethod
+    # def _prepare_url(url: str) -> tuple[str, str]:
+    #     url_param = url.split('/', maxsplit=2)
+    #     if len(url_param) == 3:
+    #         _, url, arg = url_param
+    #         return f'/{url}', arg
+    #     return url, ''
+
+    # def _find_view(self, url: str) -> View:
+    #     url, arg = self._prepare_url(url)
+    #     for path in self._urls:
+    #         if path.url == url:
+    #             return path.view(arg)
+    #     return Page404()
+
     @staticmethod
-    def _prepare_url(url: str) -> tuple[str, str]:
-        url_param = url.split('/', maxsplit=2)
-        if len(url_param) == 3:
-            _, url, arg = url_param
-            return f'/{url}', arg
-        return url, ''
+    def _prepare_url(url: str) -> str:
+        if url[-1] != '/':
+            return f'{url[1:]}/'
+        return url[1:]
 
     def _find_view(self, url: str) -> View:
-        url, arg = self._prepare_url(url)
-        for path in self._urls:
-            if path.url == url:
-                return path.view(arg)
-        return Page404()
+        url = self._prepare_url(url)
+        return get_view_from_urlpatterns(self._urls, url, Page404)
 
     def _get_view(self, environ: dict) -> View:
         url = environ['PATH_INFO']

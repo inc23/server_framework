@@ -1,15 +1,9 @@
-from app.post.view import PostCreate, PostList
-from app.user.view import Login, Users, UserItem, UserCreate, UserUpdate
+from app.user import urls as user_urls
+from app.post import urls as post_urls
 from framework.fw.urls import Url, include
 
 
 urlpatterns = [
-    Url('/login', Login, name='login'),
-    Url('/users', Users, name='users'),
-    Url('/user', UserItem, name='user'),
-    Url('/new', UserCreate, name='create_user'),
-    Url('/update', UserUpdate, name='create_user'),
-    Url('/new_post', PostCreate, name='create_post'),
-    Url('/posts', PostList, name='posts_list')
+    Url('user/', include=include(user_urls), namespace='user'),
+    Url('posts/', include=include(post_urls), namespace='posts')
 ]
-
