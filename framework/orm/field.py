@@ -144,9 +144,7 @@ class ImageField(TextField):
     def __get__(self, obj, owner):
         value = super(ImageField, self).__get__(obj, owner)
         if value:
-            host = settings.host
-            port = f':{settings.port}' if settings.port != 80 else ''
-            value = f'http://{host}{port}/{obj.value_fields_dict[self.name]}'.replace('\\', '/')
+            value = f'{settings.web_socket}{obj.value_fields_dict[self.name]}'.replace('\\', '/')
         return value
 
 

@@ -2,6 +2,7 @@ import os
 
 host = '127.0.0.1'
 port = 5000
+web_socket = f'http://{host}:{port}/' if port != 80 else f'http://{host}/'
 template_settings = {
     'BASE_DIR': os.path.dirname(os.path.abspath(__file__)),
     'TEMPLATES_DIR': 'templates'
@@ -15,5 +16,3 @@ media_folder = 'media'
 static_folder = 'static'
 media = os.path.join(main_path, media_folder)
 static = os.path.join(main_path, static_folder)
-from app.user.model import User
-user_model = User

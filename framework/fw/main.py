@@ -31,21 +31,6 @@ class Framework:
         start_response(response.status_code, response.headers.items())
         return response.body
 
-    # @staticmethod
-    # def _prepare_url(url: str) -> tuple[str, str]:
-    #     url_param = url.split('/', maxsplit=2)
-    #     if len(url_param) == 3:
-    #         _, url, arg = url_param
-    #         return f'/{url}', arg
-    #     return url, ''
-
-    # def _find_view(self, url: str) -> View:
-    #     url, arg = self._prepare_url(url)
-    #     for path in self._urls:
-    #         if path.url == url:
-    #             return path.view(arg)
-    #     return Page404()
-
     @staticmethod
     def _prepare_url(url: str) -> str:
         if url[-1] != '/':
@@ -62,7 +47,7 @@ class Framework:
         return view
 
     def _get_request(self, environ: dict) -> Request:
-        return Request(environ, self._settings)
+        return Request(environ, self._settings, self._urls)
 
     @staticmethod
     def _get_response(environ: dict, view: View, request: Request) -> Response:

@@ -22,7 +22,6 @@ def get_view_from_urlpatterns(url_list: List[Url], url: str, view404: Type[View]
             if path.view:
                 return path.view(url.replace(path.url, ''))
             url = url.replace(path.url, '')
-            print(url)
             return get_view_from_urlpatterns(path.include, url, view404)
     return view404()
 

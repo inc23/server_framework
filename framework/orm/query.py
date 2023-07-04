@@ -30,7 +30,7 @@ class Q:
         return self._exp.join(kv_pair)
 
     def update_q(self) -> str:
-        kv_pair = [f'{k} = "{v}"' for k, v in self._data.items()]
+        kv_pair = [f"{k} = '{v}'" for k, v in self._data.items()]
         return self._exp.join(kv_pair)
 
     def __bool__(self):

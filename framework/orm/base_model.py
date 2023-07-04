@@ -1,7 +1,5 @@
 from typing import Generator
 from .field import Field, IdField
-from .connector import connector
-from .queryset import QuerySet
 
 
 class MetaModel(type):
@@ -33,7 +31,8 @@ class MetaModel(type):
         return []
 
     @property
-    def objects(cls) -> QuerySet:
+    def objects(cls):
+        from .queryset import QuerySet
         return QuerySet(cls)
 
     @classmethod
@@ -48,6 +47,7 @@ class CreateTable:
         self._create_tables()
 
     def _create_tables(self) -> None:
+        from .connector import connector
         conn = connector.get_connector()
         cursor = conn.cursor()
         for query in self._create_query():

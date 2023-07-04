@@ -17,9 +17,10 @@ class PostDict(dict):
 
 class Request:
 
-    def __init__(self, environ: dict, setting: dict):
+    def __init__(self, environ: dict, setting: dict, url_list: list):
         self.environ = environ
         self.settings = setting
+        self.url_list = url_list
         self._build_get_dict(environ['QUERY_STRING'])
         self._build_post_dict(environ['wsgi.input'])
         self.extra = dict()

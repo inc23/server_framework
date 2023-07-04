@@ -23,6 +23,7 @@ class DBConnector:
 
     def update(self, query: str) -> None:
         self._cursor.execute(query)
+        print(query)
         self._conn.commit()
 
 

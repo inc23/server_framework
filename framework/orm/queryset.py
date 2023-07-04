@@ -3,6 +3,7 @@ from .. import settings
 from .connector import connector
 from .field import Expression
 from .query import Query
+from .signal import save, pre_update, post_update, delete
 
 
 class QuerySet:
@@ -12,6 +13,7 @@ class QuerySet:
         self.model: MetaModel = model
         self.model_name = model.model_name
         self.fields = model.fields.keys()
+        self.value_fields_dict = dict()
         self._related_data: dict | None = None
         self._conn = connector
         self._expression = None
@@ -104,25 +106,36 @@ class QuerySet:
         return result
 
     def save(self, fields_dict: dict = None, instance=None, ) -> None:
-        for key in self.model.fields:
-            getattr(instance, key)
-        if instance.new_instance:
+        if instance:
+            for key in self.model.fields:
+                getattr(instance, key)
             self._new(fields_dict)
         else:
-            self._update(instance)
+            self._update()
 
-    def _update(self, instance) -> None:
+    def _update(self) -> None:
         q = Query()
         q = q.UPDATE(self.model_name).SET(
-            **instance.value_fields_dict).WHERE(id=instance.id)
+            **self.value_fields_dict).WHERE(self._expression, **self._filter_kwargs)
         query = str(q)
+        pre_update.send(self)
         self._conn.update(query)
+        self._result = None
+        post_update.send(self)
 
     def _new(self, field_dict: dict) -> None:
         q = Query()
         q = q.INSERT(self.model.model_name, *field_dict.keys()).VALUES(*field_dict.values())
         query = str(q)
         self._conn.create(query, *field_dict.values())
+
+    def delete(self):
+        if self._is_get:
+            q = Query()
+            q = q.DELETE(self.model.model_name).WHERE(self._expression, **self._filter_kwargs)
+            query = str(q)
+            delete.send(self)
+            self._conn.update(query)
 
     def __iter__(self):
         if self._result is None:
@@ -132,9 +145,17 @@ class QuerySet:
     def __getattr__(self, item):
         if self._result is None:
             self._result = self._fetch()[0]
+            if not self._result:
+                return []
         return getattr(self._result, item)
 
     def __bool__(self):
         if self._result is None:
             self._result = self._fetch()
         return bool(self._result)
+
+    def __setattr__(self, key, value):
+        if 'fields' in self.__dict__ and key in self.fields:
+            self.value_fields_dict[key] = value
+        else:
+            super(QuerySet, self).__setattr__(key, value)

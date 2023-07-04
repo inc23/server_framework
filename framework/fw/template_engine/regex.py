@@ -20,3 +20,6 @@ ELSE_BLOCK_PATTERN = re.compile(
 )
 
 VARIABLE_PATTERN = re.compile(r'{{ (?P<variable>[a-zA-Z0-9_.]+) }}')
+
+
+URL_PATTERN = re.compile(r'{% url (?P<namespace>\w+):(?P<name>\w+) (?P<arg>\w+) %}')

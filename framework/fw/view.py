@@ -2,7 +2,7 @@ from typing import Type
 from .exception import MethodError
 from .request import Request
 from .response import Response
-from .template_engine import build_template
+from framework.fw.template_engine.template_engine import build_template
 from ..orm.base_model import BaseModel
 from ..orm.form import BaseForm
 
