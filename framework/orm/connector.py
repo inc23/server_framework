@@ -1,6 +1,6 @@
 import sqlite3
 import os
-from framework import settings
+import settings
 
 
 class DBConnector:

@@ -1,9 +1,9 @@
 from typing import Any
-from .. import settings
+import settings
 from .connector import connector
 from .field import Expression
 from .query import Query
-from .signal import save, pre_update, post_update, delete
+# from .signal import save, pre_update, post_update, delete
 
 
 class QuerySet:
@@ -118,6 +118,7 @@ class QuerySet:
         q = q.UPDATE(self.model_name).SET(
             **self.value_fields_dict).WHERE(self._expression, **self._filter_kwargs)
         query = str(q)
+        from .signal import pre_update, post_update
         pre_update.send(self)
         self._conn.update(query)
         self._result = None
@@ -134,6 +135,7 @@ class QuerySet:
             q = Query()
             q = q.DELETE(self.model.model_name).WHERE(self._expression, **self._filter_kwargs)
             query = str(q)
+            from .signal import delete
             delete.send(self)
             self._conn.update(query)
 

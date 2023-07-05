@@ -3,7 +3,7 @@ from urllib.parse import parse_qs
 from .request import Request
 from .response import Response
 from framework.auth.jwt import check_jwt
-from framework import settings
+import settings
 
 
 class Middleware:

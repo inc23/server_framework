@@ -5,7 +5,7 @@ from time import time
 from typing import Callable
 from .http_response import Response
 from .request_parse import RequestParser
-from framework import settings
+import settings
 
 
 class Server:

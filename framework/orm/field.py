@@ -1,6 +1,6 @@
 import re
 from typing import Any, Callable, List, Tuple
-from framework import settings
+import settings
 from framework.auth.security import get_password_hash
 from datetime import datetime
 

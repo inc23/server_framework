@@ -1,6 +1,6 @@
 import os
 
-from framework import settings
+import settings
 from framework.fw.request import Request
 from framework.fw.response import Response
 

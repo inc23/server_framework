@@ -2,7 +2,7 @@ import json
 import base64
 import hmac
 import hashlib
-from framework.settings import secret_JWT
+from settings import secret_JWT
 
 header_jwt = {
     'alg': 'HS256',

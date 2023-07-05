@@ -1,7 +1,6 @@
-import inspect
 import os
 import re
-from framework.settings import web_socket
+from settings import web_socket
 from framework.fw.request import Request
 from .block_if import IfBlock
 from .regex import IF_BLOCK_PATTERN, VARIABLE_PATTERN, FOR_BLOCK_PATTERN, URL_PATTERN
@@ -9,16 +8,20 @@ from .regex import IF_BLOCK_PATTERN, VARIABLE_PATTERN, FOR_BLOCK_PATTERN, URL_PA
 
 class Engine:
 
-    def __init__(self, base_dir: str, template_dir: str, url_list: list):
+    def __init__(self, base_dir: list, template_dir: str, url_list: list):
         self.url_list = url_list
-        self._template_dir_path = os.path.join(base_dir, template_dir)
+        self.base_dir = base_dir
+        self.template_dir = template_dir
 
     def _get_template_as_string(self, template_name: str) -> str:
-        template_path = os.path.join(self._template_dir_path, template_name)
-        if not os.path.isfile(template_path):
-            raise Exception('template is not file')
-        with open(template_path, encoding='utf-8') as file:
-            return file.read()
+        for _dir in self.base_dir:
+            template_dir_path = os.path.join(_dir, self.template_dir)
+            template_path = os.path.join(template_dir_path, template_name)
+            if not os.path.isfile(template_path):
+                continue
+            with open(template_path, encoding='utf-8') as file:
+                return file.read()
+        raise Exception('template not is not found')
 
     @staticmethod
     def _resolve_variable(context: dict, var: str) -> str:

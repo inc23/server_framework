@@ -2,7 +2,7 @@ import cgi
 import io
 import os
 from urllib.parse import parse_qs
-from framework import settings
+import settings
 
 
 class PostDict(dict):
