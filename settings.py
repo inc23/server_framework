@@ -14,9 +14,8 @@ db_dir_path = BASE_DIR
 db_name = 'db.db'
 secret_JWT = 'yNTYiLCAidHlwIjogIkpXVCJ9.eyJzdWIiOiAiMTIzNDU2Nzg5MCIsICJuYW1lIjogIkpvaG4gRG9lIiwgImFkbWluIjogdHJ1ZX0'
 echo_sql = True
-main_path = os.path.dirname(os.path.abspath(__file__))
 media_folder = 'media'
 static_folder = 'static'
-media = os.path.join(main_path, media_folder)
-static = os.path.join(main_path, static_folder)
+media = os.path.join(BASE_DIR, media_folder)
+static = os.path.join(BASE_DIR, static_folder)
 

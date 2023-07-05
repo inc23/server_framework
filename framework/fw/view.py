@@ -7,14 +7,24 @@ from ..orm.base_model import BaseModel
 from ..orm.form import BaseForm
 
 
-def redirect(request: Request, view: str) -> Response:
+def redirect(request: Request, spacename_name: str) -> Response:
     from app.urls import urlpatterns
     host = request.environ.get('HOST')
     url = None
-    for path in urlpatterns:
-        if path.name == view:
-            url = path.url[1:]
-            break
+    if ':' in spacename_name:
+        spacename, name = spacename_name.split(':')
+        for path in urlpatterns:
+            if path.namespace == spacename:
+                _url = path.url
+                for pth in path.include:
+                    if pth.name == name:
+                        _url += pth.url
+                        url = _url
+                        break
+    else:
+        for path in urlpatterns:
+            if path.name == spacename_name:
+                url = path.url
     if not url:
         url = '404'
     return Response(status_code=303, headers={'Location': f'http://{host}/{url}'}, request=request)
@@ -23,6 +33,8 @@ def redirect(request: Request, view: str) -> Response:
 class View:
     template_name: str | None = None
     extra_context: dict | None = None
+    success_redirect_url: str | None = None
+    fail_redirect_url: str | None = None
 
     def __init__(self, arg: str | None = None):
         self.arg = arg
@@ -54,6 +66,12 @@ class View:
     def render_to_response(self, context) -> Response:
         body = build_template(self.request, context, self.template_name)
         return Response(request=self.request, body=body)
+
+    def success_redirect(self):
+        return redirect(self.request, self.success_redirect_url)
+
+    def fail_redirect(self):
+        return redirect(self.request, self.fail_redirect_url)
 
 
 class GenericView(View):
@@ -92,7 +110,6 @@ class DetailView(GenericView):
 class CreateView(View):
     form_class: Type[BaseForm]
     name_in_template: str = 'form'
-    redirect_page: str | None = None
 
     def __init__(self, *args, **kwargs):
         super(CreateView, self).__init__(*args, **kwargs)
@@ -115,7 +132,7 @@ class CreateView(View):
 
     def form_valid(self, form) -> Response:
         form.save()
-        return redirect(self.request, self.redirect_page)
+        return redirect(self.request, self.success_redirect_url)
 
     def form_invalid(self, form: BaseForm) -> Response:
         context = self.get_context_data(form=form)
@@ -148,8 +165,16 @@ class UpdateView(CreateView):
         form = self.get_form(request.POST)
         if form.is_valid():
             form.save()
-            return redirect(self.request, self.redirect_page)
+            return redirect(self.request, self.success_redirect_url)
         return self.form_invalid(form)
+
+
+class DeleteView(DetailView):
+    model_class: Type[BaseModel]
+    name_in_template: str = 'model'
+
+    # def get(self, request: Request, *args, **kwargs) -> Response:
+
 
 
 class Page404(View):

@@ -7,7 +7,7 @@ class PostCreate(CreateView):
     form_class = PostCreateForm
     extra_context = {'title': 'new post'}
     template_name = 'create_post.html'
-    redirect_page = 'users'
+    success_redirect_url = 'users'
 
 
 class PostList(ListView):

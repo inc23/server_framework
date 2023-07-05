@@ -10,12 +10,12 @@ class Login(View):
     extra_context = {'a': 'aaaaaaa', 'b': None, "lst": [1, 2, None, None, None]}
 
     def post(self, request: Request, *args, **kwargs):
-        email = request.POST['email']
-        password = request.POST['password']
+        email = request.POST['email'][0]
+        password = request.POST['password'][0]
         user = authenticate(email, password)
         if user:
             login(request, user)
-        return redirect(request, 'login')
+        return redirect(request, 'user:login')
 
 
 class Users(ListView):
@@ -34,11 +34,11 @@ class UserCreate(CreateView):
     form_class = UserCreateForm
     extra_context = {'title': 'create user'}
     template_name = 'create_user.html'
-    redirect_page = 'users'
+    success_redirect_url = 'user:users'
 
 
 class UserUpdate(UpdateView):
     form_class = UserUpdateForm
     extra_context = {'title': 'create user'}
     template_name = 'user_update.html'
-    redirect_page = 'users'
+    success_redirect_url = 'user:users'

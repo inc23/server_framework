@@ -7,7 +7,7 @@ from framework.fw.response import Response
 
 def file_response(request: Request, url: str) -> Response:
     url = url[1:]
-    file_path = os.path.join(settings.main_path, url)
+    file_path = os.path.join(settings.BASE_DIR, url)
     if os.path.isfile(file_path):
         with open(file_path, 'rb') as file:
             file_content = file.read()

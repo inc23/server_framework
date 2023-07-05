@@ -103,6 +103,8 @@ class QuerySet:
                     row = row[len(model_rel.fields):]
             result.append(model)
         self._related_data = None
+        if self._is_get and result:
+            return result[0]
         return result
 
     def save(self, fields_dict: dict = None, instance=None, ) -> None:
@@ -146,7 +148,7 @@ class QuerySet:
 
     def __getattr__(self, item):
         if self._result is None:
-            self._result = self._fetch()[0]
+            self._result = self._fetch()
             if not self._result:
                 return []
         return getattr(self._result, item)
@@ -161,3 +163,12 @@ class QuerySet:
             self.value_fields_dict[key] = value
         else:
             super(QuerySet, self).__setattr__(key, value)
+            
+    def __str__(self):
+        if self._is_get:
+            if self._result is None:
+                self._result = self._fetch()
+            return str(self._result)
+        else:
+            return super(QuerySet, self).__str__()
+                

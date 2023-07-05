@@ -11,6 +11,7 @@ class MetaModel(type):
         for parent in parents:
             new_attrs.update(parent.fields)
         new_attrs.update(attrs)
+        new_attrs.update({'id': IdField(nullable=True)})
         related_fields = dict()
         for k, v in new_attrs.items():
             if isinstance(v, Field):
@@ -84,7 +85,7 @@ class CreateTable:
 
 class BaseModel(metaclass=MetaModel):
 
-    id = IdField(nullable=True)
+    id = None
 
     def __init__(self, new_instance: bool = True, **kwargs):
         super(BaseModel, self).__init__()

@@ -1,3 +1,5 @@
+import os
+from settings import media
 from framework.orm.signal import receiver, pre_update, post_update, delete
 from app.post.model import Post
 
@@ -15,6 +17,9 @@ def foo2(instance):
 
 
 @receiver(signal=delete, sender=Post)
-def foo3(instance):
-    print('delete')
-    print(instance.text)
+def delete_post(instance):
+    if instance.image:
+        image = instance.image.rsplit('/', 1)[1]
+        path = os.path.join(media, image)
+        if os.path.isfile(path):
+            os.remove(path)
