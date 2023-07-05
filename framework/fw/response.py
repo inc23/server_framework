@@ -1,4 +1,4 @@
-from typing import Any, Tuple
+from typing import Any, Tuple, Generator
 from .request import Request
 
 
@@ -29,7 +29,7 @@ class Headers:
 
 class Response:
 
-    def __init__(self, request: Request, status_code: int = 200, headers=None, body: str | bytes = '',
+    def __init__(self, request: Request, status_code: int = 200, headers=None, body: str | bytes | Generator = '',
                  is_file: bool = False):
         self.is_file = is_file
         self.request = request
@@ -48,10 +48,10 @@ class Response:
 
     def _set_headers(self) -> None:
         if self.is_file:
-            file_name = self.request.environ['PATH_INFO'].rsplit('/', maxsplit=1)
+            file_name = self.request.environ['PATH_INFO'].rsplit('/', maxsplit=1)[-1]
             self.headers.update({
                 'Content-Type': 'application/octet-stream',
-                'Content-Disposition': f'attachment; filename="{file_name}"'
+                'Content-Disposition': f'attachment; filename="{file_name}"',
             })
 
         else:

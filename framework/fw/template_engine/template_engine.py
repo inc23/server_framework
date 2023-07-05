@@ -3,7 +3,7 @@ import re
 from settings import web_socket
 from framework.fw.request import Request
 from .block_if import IfBlock
-from .regex import IF_BLOCK_PATTERN, VARIABLE_PATTERN, FOR_BLOCK_PATTERN, URL_PATTERN
+from .regex import IF_BLOCK_PATTERN, VARIABLE_PATTERN, FOR_BLOCK_PATTERN, URL_PATTERN, INCLUDE_PATTERN
 
 
 class Engine:
@@ -32,6 +32,16 @@ class Engine:
         else:
             var = context.get(var, '')
         return var
+
+    def _build_include_block(self, raw_template: str):
+        include_blocks = INCLUDE_PATTERN.finditer(raw_template)
+        if include_blocks is None:
+            return raw_template
+        for block in include_blocks:
+            file_name = block.group('html_file')
+            file = self._get_template_as_string(file_name)
+            raw_template = INCLUDE_PATTERN.sub(file, raw_template, count=1)
+        return raw_template
 
     def _build_block(self, context: dict, raw_template: str) -> str:
         used_var = VARIABLE_PATTERN.findall(raw_template)
@@ -94,6 +104,7 @@ class Engine:
 
     def build(self, context: dict, template_name: str) -> str:
         template = self._get_template_as_string(template_name)
+        template = self._build_include_block(template)
         template = self._build_block_for(context, template)
         template = self._build_block_if(context, template)
         template = self._build_block(context, template)

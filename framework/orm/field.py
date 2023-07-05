@@ -144,8 +144,12 @@ class ImageField(TextField):
     def __get__(self, obj, owner):
         value = super(ImageField, self).__get__(obj, owner)
         if value:
-            value = f'{settings.web_socket}{obj.value_fields_dict[self.name]}'.replace('\\', '/')
+            value = f'{settings.media_html}{obj.value_fields_dict[self.name]}'.replace('\\', '/')
+            self.file_name = obj.value_fields_dict[self.name]
         return value
+
+    def get_file_name_only(self):
+        return self.file_name
 
 
 class FloatField(Field):

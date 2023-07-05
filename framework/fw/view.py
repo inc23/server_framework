@@ -176,7 +176,6 @@ class DeleteView(DetailView):
     # def get(self, request: Request, *args, **kwargs) -> Response:
 
 
-
 class Page404(View):
 
     def get(self, request: Request, *args, **kwargs) -> Response:

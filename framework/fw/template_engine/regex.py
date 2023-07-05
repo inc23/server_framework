@@ -23,3 +23,6 @@ VARIABLE_PATTERN = re.compile(r'{{ (?P<variable>[a-zA-Z0-9_.]+) }}')
 
 
 URL_PATTERN = re.compile(r'{% url (?P<namespace>\w+):(?P<name>\w+) (?P<arg>\w+) %}')
+
+
+INCLUDE_PATTERN = re.compile(r"{% include '(?P<html_file>[a-zA-Z0-9_.]+)' %}")
