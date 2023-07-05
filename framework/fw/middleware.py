@@ -22,7 +22,7 @@ class Session(Middleware):
             cookies = response.request.environ.get('COOKIE')
             if not parse_qs(cookies).get('jwt'):
                 response.headers.update(
-                    {'Set-Cookie': f'jwt={response.request.jwt}; Max-Age=10;'}
+                    {'Set-Cookie': f'jwt={response.request.jwt}; Max-Age=100; Path=/'}
                 )
 
     def to_request(self, request: Request) -> None:
