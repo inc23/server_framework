@@ -26,3 +26,12 @@ URL_PATTERN = re.compile(r'{% url (?P<namespace>\w+):(?P<name>\w+) (?P<arg>\w+) 
 
 
 INCLUDE_PATTERN = re.compile(r"{% include '(?P<html_file>[a-zA-Z0-9_.]+)' %}")
+
+
+EXTEND_PATTERN = re.compile(r"{% extend '(?P<html_file>[a-zA-Z0-9_.]+)' %}")
+
+
+EXTEND_BLOCK_PATTERN = re.compile(
+    r'{% block (?P<block>\w+) %}(?P<content>[\S\s]+?)?{% endblock %}'
+)
+

@@ -7,7 +7,7 @@ from framework.fw.response import Response
 
 def file_response(request: Request, url: str) -> Response:
     url = url[1:]
-    CHUNK_SIZE = 8192
+    CHUNK_SIZE = 81920
     file_path = os.path.join(settings.BASE_DIR, url)
     if os.path.isfile(file_path):
         def file_generator():

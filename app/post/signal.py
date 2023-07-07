@@ -19,7 +19,7 @@ def foo2(instance):
 @receiver(signal=delete, sender=Post)
 def delete_post(instance):
     if instance.image:
-        image = instance.image.rsplit('/', 1)[1]
+        image = instance.image.file_name
         path = os.path.join(media, image)
         if os.path.isfile(path):
             os.remove(path)
