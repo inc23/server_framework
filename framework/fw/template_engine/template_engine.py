@@ -1,9 +1,10 @@
+import os
 import re
-from settings import web_socket
+from settings import web_socket, static_html
 from framework.fw.request import Request
 from .block_if import IfBlock
 from .get_template import GetTemplateAsString
-from .regex import IF_BLOCK_PATTERN, VARIABLE_PATTERN, FOR_BLOCK_PATTERN, URL_PATTERN, INCLUDE_PATTERN
+from .regex import IF_BLOCK_PATTERN, VARIABLE_PATTERN, FOR_BLOCK_PATTERN, URL_PATTERN, STATIC_PATTERN
 
 
 class Engine:
@@ -38,8 +39,6 @@ class Engine:
 
     def _build_block_for(self, context: dict, raw_template: str) -> str:
         for_blocks = FOR_BLOCK_PATTERN.finditer(raw_template)
-        if for_blocks is None:
-            return raw_template
         for for_block in for_blocks:
             build_for = ''
             for i in context.get(for_block.group('seq'), []):
@@ -56,8 +55,6 @@ class Engine:
     @staticmethod
     def _build_block_if(context: dict, raw_template: str) -> str:
         if_blocks = IF_BLOCK_PATTERN.finditer(raw_template)
-        if if_blocks is None:
-            return raw_template
         for if_block in if_blocks:
             if_block_suber = IfBlock()
             if_block_suber = if_block_suber(context, if_block)
@@ -67,8 +64,6 @@ class Engine:
 
     def _url_block(self, raw_template: str) -> str:
         used_urls = URL_PATTERN.finditer(raw_template)
-        if used_urls is None:
-            return raw_template
         for url_re in used_urls:
             name = url_re.group('name')
             namespace = url_re.group('namespace')
@@ -81,11 +76,21 @@ class Engine:
                             raw_template = URL_PATTERN.sub(url, raw_template, count=1)
         return raw_template
 
+    @staticmethod
+    def _build_static(raw_template):
+        static_files = STATIC_PATTERN.finditer(raw_template)
+        for file_in_template in static_files:
+            file = file_in_template.group('file')
+            path_file = os.path.join(static_html, file)
+            raw_template = STATIC_PATTERN.sub(path_file, raw_template, count=1)
+        return raw_template
+
     def build(self, context: dict, template: str) -> str:
         template = self._build_block_for(context, template)
         template = self._build_block_if(context, template)
         template = self._build_block(context, template)
         template = self._url_block(template)
+        template = self._build_static(template)
         return template
 
 

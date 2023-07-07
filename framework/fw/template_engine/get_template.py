@@ -22,12 +22,13 @@ class GetTemplateAsString:
 
     def _build_extend(self, raw_template: str) -> str:
         extend_files = EXTEND_PATTERN.finditer(raw_template)
-        if not extend_files:
-            return raw_template
         extending_file = None
         for file in extend_files:
-            extending_file = self._get_template_as_string(file.group('html_file'))
-            break
+            if file:
+                extending_file = self._get_template_as_string(file.group('html_file'))
+                break
+        if extending_file is None:
+            return raw_template
         extend_blocks_in_template = {match.group('block'): match.group('content')
                                      for match in EXTEND_BLOCK_PATTERN.finditer(raw_template)}
         extend_blocks_in_extending_file = {match.group('block'): match.group('content')
@@ -40,8 +41,6 @@ class GetTemplateAsString:
 
     def _build_include_block(self, raw_template: str) -> str:
         include_blocks = INCLUDE_PATTERN.finditer(raw_template)
-        if include_blocks is None:
-            return raw_template
         for block in include_blocks:
             file_name = block.group('html_file')
             file = self._get_template_as_string(file_name)

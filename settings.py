@@ -19,4 +19,5 @@ static_folder = 'static/'
 media = os.path.join(BASE_DIR, media_folder)
 media_html = os.path.join(web_socket, media_folder)
 static = os.path.join(BASE_DIR, static_folder)
+static_html = os.path.join(web_socket, static_folder)
 

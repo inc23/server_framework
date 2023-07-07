@@ -48,11 +48,17 @@ class Response:
 
     def _set_headers(self) -> None:
         if self.is_file:
-            file_name = self.request.environ['PATH_INFO'].rsplit('/', maxsplit=1)[-1]
-            self.headers.update({
-                'Content-Type': 'application/octet-stream',
-                'Content-Disposition': f'attachment; filename="{file_name}"',
-            })
+            if self.request.environ['SEC_FETCH_DEST'] == 'style':
+                self.headers.update({
+                    'Cache-Control': 'max-age=8380800',
+                    'Content-Type': 'text/css'
+                })
+            else:
+                file_name = self.request.environ['PATH_INFO'].rsplit('/', maxsplit=1)[-1]
+                self.headers.update({
+                    'Content-Type': 'application/octet-stream',
+                    'Content-Disposition': f'attachment; filename="{file_name}"',
+                })
 
         else:
             self.headers.update({

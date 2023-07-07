@@ -35,3 +35,4 @@ EXTEND_BLOCK_PATTERN = re.compile(
     r'{% block (?P<block>\w+) %}(?P<content>[\S\s]+?)?{% endblock %}'
 )
 
+STATIC_PATTERN = re.compile(r"{% static '(?P<file>[\S\s]+?)' %}")
