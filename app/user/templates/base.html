@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <link href="{% static 'css/styles.css' %}" rel="stylesheet" >
+
     <title>
       {% block title %}
       {% endblock %}
@@ -10,11 +11,14 @@
 
 </head>
 <body>
+<br>
+<canvas id="rotation" width="860" height="860"></canvas>
+<br>
 {% block some %}
 {% endblock %}
 
 {% block body %}
 {% endblock %}
-
+<script src="{% static 'js/js.js' %}"></script>
 </body>
 </html>

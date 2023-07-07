@@ -53,6 +53,11 @@ class Response:
                     'Cache-Control': 'max-age=8380800',
                     'Content-Type': 'text/css'
                 })
+            elif self.request.environ['SEC_FETCH_DEST'] == 'script':
+                self.headers.update({
+                    'Cache-Control': 'max-age=8380800',
+                    'Content-Type': 'application/javascript'
+                })
             else:
                 file_name = self.request.environ['PATH_INFO'].rsplit('/', maxsplit=1)[-1]
                 self.headers.update({
