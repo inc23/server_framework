@@ -52,4 +52,3 @@ class Request:
         else:
             param = param.read().decode('utf-8')
             self.POST = parse_qs(param)
-            # self.POST = PostDict(parse_qs(param))

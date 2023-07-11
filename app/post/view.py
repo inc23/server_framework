@@ -38,6 +38,7 @@ class PostDetail(CreateView):
 
     def form_valid(self, form) -> Response:
         form.post = Post.objects.get(Post.id == self.arg).id
+        form.name = str(self.request.user)
         form.save()
         return redirect(self.request, self.success_redirect_url, arg=self.arg)
 

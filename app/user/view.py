@@ -2,13 +2,13 @@ from app.user.form import UserCreateForm, UserUpdateForm
 from app.user.model import User
 from framework.auth.auth import authenticate, login
 from framework.fw.request import Request
-from framework.fw.view.message import message
 from framework.fw.view.view import View, redirect, ListView, DetailView, CreateView, UpdateView
+from app.mixin import AdminCheckMixin
 
 
 class Login(View):
     template_name = 'login.html'
-    extra_context = {'a': 'aaaaaaa', 'b': None, "lst": [1, 2, None, None, None]}
+    extra_context = {'title': 'login'}
 
     def post(self, request: Request, *args, **kwargs):
         email = request.POST.get('email')[0]
@@ -16,19 +16,16 @@ class Login(View):
         user = authenticate(email, password)
         if user:
             login(request, user)
-            message.success(request, 'login is success')
-        else:
-            message.warning(request, 'wrong login or password')
         return redirect(request, 'user:login')
 
 
-class Users(ListView):
+class Users(AdminCheckMixin, ListView):
     model_class = User
     extra_context = {'title': 'users'}
     template_name = 'users.html'
 
 
-class UserItem(DetailView):
+class UserDetail(DetailView):
     model_class = User
     extra_context = {'title': 'user'}
     template_name = 'user.html'
@@ -41,8 +38,19 @@ class UserCreate(CreateView):
     success_redirect_url = 'user:users'
 
 
-class UserUpdate(UpdateView):
+class AdminUserUpdate(AdminCheckMixin, UpdateView):
     form_class = UserUpdateForm
-    extra_context = {'title': 'create user'}
+    extra_context = {'title': 'update user'}
     template_name = 'user_update.html'
     success_redirect_url = 'user:users'
+
+
+class UserUpdate(UpdateView):
+    form_class = UserUpdateForm
+    extra_context = {'title': 'update my profile'}
+    template_name = 'user_update.html'
+    success_redirect_url = 'user:users'
+
+    def get_object(self):
+        self.id = self.request.user.id
+        return super(UserUpdate, self).get_object()

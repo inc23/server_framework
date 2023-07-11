@@ -13,4 +13,4 @@ class PostCreateForm(BaseForm):
 
 class CommentCreateForm(BaseForm):
     model_class = Comment
-    include_field = ('name', 'text')
+    include_field = ('text',)

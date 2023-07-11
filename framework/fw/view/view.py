@@ -90,7 +90,7 @@ class DetailView(GenericView):
         return context
 
 
-class CreateView(View):
+class CreateView(GenericView):
     form_class: Type[BaseForm]
     name_in_template: str = 'form'
 
@@ -140,9 +140,7 @@ class UpdateView(CreateView):
         return form
 
     def get_object(self) -> BaseModel:
-        class_object = self.form_class.model_class
-        obj = class_object.objects.get(class_object.id == self.id)
-        return obj
+        return self.get_queryset().get(self.model_class.id == self.id)
 
     def post(self, request: Request, *args, **kwargs) -> Response:
         form = self.get_form(request.POST)
