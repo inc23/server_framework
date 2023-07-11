@@ -108,7 +108,4 @@ def build_template(
         url_list=request.url_list,
         raw_template=raw_template
     )
-    if context is None:
-        context = dict()
-    context.update({'user': request.user})
     return engine.build(context, raw_template)

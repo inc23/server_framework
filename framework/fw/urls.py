@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Type, List
-from .view import View, Page404
+from framework.fw.view.view import View, Page404
 
 
 @dataclass
@@ -20,7 +20,7 @@ def get_view_from_urlpatterns(url_list: List[Url], url: str, view404: Type[View]
     for path in url_list:
         if path.url in url:
             if path.view:
-                return path.view(url.replace(path.url, ''))
+                return path.view(url.replace(path.url, '')[:-1])
             url = url.replace(path.url, '')
             return get_view_from_urlpatterns(path.include, url, view404)
     return view404()

@@ -15,7 +15,7 @@ class Middleware:
         pass
 
 
-class Session(Middleware):
+class JWT(Middleware):
 
     def to_response(self, response: Response) -> None:
         if response.request.jwt:
@@ -58,4 +58,4 @@ class CSRFToken(Middleware):
             request.extra['csrf_token'] = secrets.token_hex(16)
 
 
-middlewares = [Session, CSRFToken]
+middlewares = [JWT, CSRFToken]

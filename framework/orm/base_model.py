@@ -8,7 +8,7 @@ class MetaModel(type):
 
     def __new__(mcs, model_name: str, parents: tuple, attrs: dict):
         fields = dict()
-        new_attrs = dict()
+        new_attrs = {'orm_mode': True}
         for parent in parents:
             new_attrs.update(deepcopy(parent.fields))
         new_attrs.update(attrs)
@@ -23,7 +23,7 @@ class MetaModel(type):
         model.fields = fields
         model.model_name = attrs['__qualname__'].lower()
         model.related_fields = related_fields
-        if name != 'basemodel':
+        if model.orm_mode:
             mcs.classes_dict.update({name: model})
         return model
 
@@ -79,13 +79,15 @@ class CreateTable:
     def _create_foreign_key_line(field: dict) -> Generator[str, None, None]:
         for name, field in field.items():
             if field.foreign_key is not None:
-                model, field = field.foreign_key.split('.')
-                yield f'\r\n\tFOREIGN KEY ({model}) REFERENCES {model}({field})'
+                model, foreign_field = field.foreign_key.split('.')
+                on_delete = field.on_delete if field.on_delete else ''
+                yield f'\r\n\tFOREIGN KEY ({model}) REFERENCES {model}({foreign_field}){on_delete}'
 
 
 class BaseModel(metaclass=MetaModel):
 
     id = IdField(nullable=True)
+    orm_mode = False
 
     def __init__(self, new_instance: bool = True, **kwargs):
         super(BaseModel, self).__init__()

@@ -1,6 +1,6 @@
 from typing import Callable, List, Type
 from .request import Request
-from .view import View, Page404
+from framework.fw.view.view import View, Page404
 from .response import Response
 from .urls import Url, start_urlpatterns, get_view_from_urlpatterns
 from .middleware import Middleware
@@ -10,13 +10,14 @@ from .file_response import file_response
 
 class Framework:
 
-    __slots__ = ('_urls', '_settings', '_middlewares')
+    __slots__ = ('_urls', '_settings', '_middlewares', 'context_managers')
 
-    def __init__(self, urls: List[Url], settings: dict, middlewares: List[Type[Middleware]]):
+    def __init__(self, urls: List[Url], settings: dict, middlewares: List[Type[Middleware]], context_managers: list):
         self._urls = start_urlpatterns
         self._urls.extend(urls)
         self._settings = settings
         self._middlewares = middlewares
+        self.context_managers = context_managers
         MetaModel.create_tables()
 
     def __call__(self, environ: dict, start_response: Callable) -> bytes:
@@ -26,6 +27,7 @@ class Framework:
         else:
             view = self._get_view(environ)
             self._to_request(request)
+            self._apply_context_manager(view, request)
             response = self._get_response(environ, view, request)
             self._to_response(response)
         start_response(response.status_code, response.headers.items())
@@ -34,7 +36,7 @@ class Framework:
     @staticmethod
     def _prepare_url(url: str) -> str:
         if url[-1] != '/':
-            return f'{url[1:]}/'
+            url = f'{url}/'
         return url[1:]
 
     def _find_view(self, url: str) -> View:
@@ -58,6 +60,10 @@ class Framework:
     def _get_file_response(environ, request):
         url = environ['PATH_INFO']
         return file_response(request, url)
+
+    def _apply_context_manager(self, view: View, request: Request):
+        for context_manager in self.context_managers:
+            context_manager(view.context_from_context_manager, request)
 
     def _to_response(self, response: Response) -> None:
         for middleware in self._middlewares:

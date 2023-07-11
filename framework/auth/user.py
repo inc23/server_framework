@@ -5,6 +5,7 @@ from framework.orm.base_model import BaseModel
 
 class BaseUser(BaseModel):
 
+    orm_mode = False
     name = TextField(nullable=False)
     last_name = TextField(nullable=False)
     password = PasswordField(nullable=False)

@@ -51,4 +51,5 @@ class Request:
                     self.POST['file_to_upload'].update({field_path: file_data})
         else:
             param = param.read().decode('utf-8')
-            self.POST = (parse_qs(param))
+            self.POST = parse_qs(param)
+            # self.POST = PostDict(parse_qs(param))

@@ -2,7 +2,8 @@ from app.user.form import UserCreateForm, UserUpdateForm
 from app.user.model import User
 from framework.auth.auth import authenticate, login
 from framework.fw.request import Request
-from framework.fw.view import View, redirect, ListView, DetailView, CreateView, UpdateView
+from framework.fw.view.message import message
+from framework.fw.view.view import View, redirect, ListView, DetailView, CreateView, UpdateView
 
 
 class Login(View):
@@ -10,11 +11,14 @@ class Login(View):
     extra_context = {'a': 'aaaaaaa', 'b': None, "lst": [1, 2, None, None, None]}
 
     def post(self, request: Request, *args, **kwargs):
-        email = request.POST['email'][0]
-        password = request.POST['password'][0]
+        email = request.POST.get('email')[0]
+        password = request.POST.get('password')[0]
         user = authenticate(email, password)
         if user:
             login(request, user)
+            message.success(request, 'login is success')
+        else:
+            message.warning(request, 'wrong login or password')
         return redirect(request, 'user:login')
 
 

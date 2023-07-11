@@ -31,6 +31,7 @@ class FieldBase:
     def __init__(
             self,
             foreign_key: None | str = None,
+            on_delete: None | str = None,
             nullable: bool = False,
             blank: bool = False,
             defaults: Any = None,
@@ -47,6 +48,7 @@ class FieldBase:
         self.placeholder = placeholder
         self.verbose_name = verbose_name
         self.choices = choices
+        self.on_delete = f' ON DELETE {on_delete}' if self.foreign_key and on_delete else None
 
     def __set_name__(self, owner, name):
         self.name = name
@@ -63,19 +65,19 @@ class FieldBase:
         return Expression(f'{self._owner.model_name}.{self.name} {exp} {other}')
 
     def __eq__(self, other) -> Expression:
-        return self._create_expression(other, '=')
+        return self._create_expression(self.check_type(other), '=')
 
     def __le__(self, other) -> Expression:
-        return self._create_expression(other, '<=')
+        return self._create_expression(self.check_type(other), '<=')
 
     def __lt__(self, other) -> Expression:
-        return self._create_expression(other, '<')
+        return self._create_expression(self.check_type(other), '<')
 
     def __ge__(self, other) -> Expression:
-        return self._create_expression(other, '>=')
+        return self._create_expression(self.check_type(other), '>=')
 
     def __gt__(self, other) -> Expression:
-        return self._create_expression(other, '>')
+        return self._create_expression(self.check_type(other), '>')
 
 
 class Field(FieldBase):
@@ -126,7 +128,7 @@ class Field(FieldBase):
 
 class IdField(Field):
     type = 'INTEGER PRIMARY KEY AUTOINCREMENT'
-    check_type = int | str
+    check_type = int
     html_type = 'number'
 
 

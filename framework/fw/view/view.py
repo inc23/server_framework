@@ -1,33 +1,11 @@
 from typing import Type
-from .exception import MethodError
-from .request import Request
-from .response import Response
+from framework.fw.exception import MethodError
+from framework.fw.request import Request
+from framework.fw.response import Response
 from framework.fw.template_engine.template_engine import build_template
-from ..orm.base_model import BaseModel
-from ..orm.form import BaseForm
-
-
-def redirect(request: Request, spacename_name: str) -> Response:
-    from app.urls import urlpatterns
-    host = request.environ.get('HOST')
-    url = None
-    if ':' in spacename_name:
-        spacename, name = spacename_name.split(':')
-        for path in urlpatterns:
-            if path.namespace == spacename:
-                _url = path.url
-                for pth in path.include:
-                    if pth.name == name:
-                        _url += pth.url
-                        url = _url
-                        break
-    else:
-        for path in urlpatterns:
-            if path.name == spacename_name:
-                url = path.url
-    if not url:
-        url = '404'
-    return Response(status_code=303, headers={'Location': f'http://{host}/{url}'}, request=request)
+from framework.fw.view.redirect import redirect
+from framework.orm.base_model import BaseModel
+from framework.orm.form import BaseForm
 
 
 class View:
@@ -38,30 +16,36 @@ class View:
 
     def __init__(self, arg: str | None = None):
         self.arg = arg
-        self.context = None
+        self.context_from_context_manager = dict()
         self.request = None
+        self.method = None
 
-    def set_param(self, request):
+    def set_param(self, request, method):
         self.request = request
-        self.context = self.get_context_data()
+        self.method = method
 
     def get_context_data(self, **kwargs) -> dict:
+        kwargs.update(self.context_from_context_manager)
         if self.extra_context:
             kwargs.update(self.extra_context)
         return kwargs
 
     def get(self, request: Request, *args, **kwargs) -> Response:
-        body = build_template(request, self.context, self.template_name)
+        context = self.get_context_data()
+        body = build_template(request, context, self.template_name)
         return Response(request=request, body=body)
 
     def post(self, request: Request, *args, **kwargs) -> Response:
         pass
 
-    def run(self, method, request) -> Response:
-        self.set_param(request)
-        if hasattr(self, method):
-            return getattr(self, method)(request)
+    def dispatch(self):
+        if hasattr(self, self.method):
+            return getattr(self, self.method)(self.request)
         raise MethodError
+
+    def run(self, method, request) -> Response:
+        self.set_param(request, method)
+        return self.dispatch()
 
     def render_to_response(self, context) -> Response:
         body = build_template(self.request, context, self.template_name)
@@ -97,13 +81,12 @@ class DetailView(GenericView):
         self.id = instance_id
         super(DetailView, self).__init__()
 
-    def get_queryset(self):
-        queryset = self.model_class.objects.get(self.model_class.id == self.id)
-        return queryset
+    def get_object(self):
+        return self.get_queryset().get(self.model_class.id == self.id)
 
     def get_context_data(self, **kwargs) -> dict:
         context = super(DetailView, self).get_context_data(**kwargs)
-        context[self.name_in_template] = self.get_queryset()
+        context[self.name_in_template] = self.get_object()
         return context
 
 
@@ -173,7 +156,9 @@ class DeleteView(DetailView):
     model_class: Type[BaseModel]
     name_in_template: str = 'model'
 
-    # def get(self, request: Request, *args, **kwargs) -> Response:
+    def get(self, request: Request, *args, **kwargs) -> Response:
+        self.get_object().delete()
+        return redirect(request, self.success_redirect_url)
 
 
 class Page404(View):

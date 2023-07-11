@@ -1,3 +1,4 @@
+import datetime
 from framework.auth.security import verify_password
 from framework.auth.jwt import header_jwt, create_jwt_token
 from framework.fw.request import Request
@@ -16,7 +17,8 @@ def login(request: Request, user: User) -> None:
     payload_jwt = {
         'id': user.id,
         'name': f'{user}',
-        'admin': user.is_admin
+        'admin': user.is_admin,
+        'expired': datetime.datetime.isoformat(datetime.datetime.now() + datetime.timedelta(days=7))
     }
     jwt = create_jwt_token(header_jwt, payload_jwt)
     request.extra['jwt'] = jwt

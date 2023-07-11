@@ -121,7 +121,7 @@ class BaseForm:
         return self._get_result_dict.get(item)
 
     def __setattr__(self, key, value):
-        if key in self.include_field:
+        if "fields" in self.__dict__ and key in self.fields:
             setattr(self._obj, key, value)
         else:
-            super(BaseForm, self).__setattr__(key, value)
+            super().__setattr__(key, value)
