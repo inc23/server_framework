@@ -3,7 +3,7 @@ from app.post.form import PostCreateForm, CommentCreateForm
 from app.post.model import Post, Comment
 from framework.fw.response import Response
 from framework.fw.view.redirect import redirect
-from framework.fw.view.view import CreateView, ListView, DetailView, DeleteView
+from framework.fw.view.view import CreateView, ListView, DetailView, DeleteView, UpdateView
 
 
 class PostCreate(UserCheckMixin, CreateView):
@@ -32,8 +32,7 @@ class PostDetail(CreateView):
 
     def get_context_data(self, **kwargs) -> dict:
         context = super(PostDetail, self).get_context_data(**kwargs)
-        context['post'] = Post.objects.get(Post.id == self.arg)
-        context['comments'] = Comment.objects.filter(Comment.post == context['post'].id)
+        context['post'] = Post.objects.select_related('author', 'comment').get(Post.id == self.arg)
         return context
 
     def form_valid(self, form) -> Response:
@@ -65,6 +64,12 @@ class MyPostDetail(AuthorCheckMixin, DetailView):
         return context
 
 
-class DeletePost(AuthorCheckMixin, DetailView):
+class PostUpdate(AuthorCheckMixin, UpdateView):
+    model_class = Post
+    url_if_denied = 'posts:posts_list'
+    extra_context = {'title': 'update'}
+
+
+class DeletePost(AuthorCheckMixin, DeleteView):
     model_class = Post
     url_if_denied = 'posts:posts_list'

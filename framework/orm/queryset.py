@@ -3,7 +3,6 @@ import settings
 from .connector import connector
 from .field import Expression
 from .query import Query
-# from .signal import save, pre_update, post_update, delete
 
 
 class QuerySet:
@@ -14,7 +13,7 @@ class QuerySet:
         self.model_name = model.model_name
         self.fields = model.fields.keys()
         self.value_fields_dict = dict()
-        self._related_data: dict | None = None
+        self._related_data = dict()
         self._conn = connector
         self._expression = None
         self._filter_kwargs = dict()
@@ -47,14 +46,25 @@ class QuerySet:
         self._order_by_data = args
         return self
 
-    def _get_select_related_query(self, q: Query, *args: str) -> Query:
+    def _prepare_related_data(self, *args):
         related_data = dict()
         if args:
-            for k, v in self.model.related_fields.items():
+            for k, v in self.model.foreign_keys.items():
                 if k in args:
-                    related_data.update({k: v})
+                    related_data[k] = str(v.foreign_key).split('.')
+            for k, v in self.model.related_dict.items():
+                if v.owner.model_name in args:
+                    related_data[k] = [v.owner.model_name, v.name]
         else:
-            related_data = self.model.related_fields
+            related_data = {k: str(v.foreign_key).split('.') for k, v in self.model.foreign_keys.items()}
+            related_data.update({k: [v.owner.model_name, v.name] for k, v in self.model.related_dict.items()})
+        self._related_data = {k: str(v.foreign_key).split('.') for k, v in self.model.foreign_keys.items()}
+        self._related_data.update(
+            {v.owner.model_name: [v.owner.model_name, v.name] for k, v in self.model.related_dict.items()})
+        return related_data
+
+    def _get_select_related_query(self, q: Query, *args: str) -> Query:
+        related_data = self._prepare_related_data(*args)
         if related_data:
             related_models = []
             for v in related_data.values():
@@ -62,7 +72,6 @@ class QuerySet:
             q = q.SELECT(f'{self.model_name}.*', *related_models).FROM(self.model_name)
             for model_field in related_data.items():
                 q.JOIN(self.model_name, model_field)
-            self._related_data = related_data
         return q
 
     def _build_query(self):
@@ -86,26 +95,36 @@ class QuerySet:
         db_result = self._conn.fetch(query)
         return db_result
 
+    @staticmethod
+    def _create_model(model_class, fields, row):
+        model = model_class(new_instance=False)
+        for field, val in zip(fields, row):
+            setattr(model, field, val)
+        return model
+
     def _fetch(self) -> list:
-        result = []
+        result_dict = dict()
         for row in self._get_db_result():
-            model = self.model(new_instance=False)
-            for field, val in zip(self.fields, row):
-                setattr(model, field, val)
+            model = self._create_model(self.model, self.fields, row)
+            model = result_dict.get(model.id, model)
             if self._related_data:
                 row = row[len(model.fields):]
                 for k, v in self._related_data.items():
                     from .base_model import MetaModel
-                    model_rel = MetaModel.classes_dict[v[0]](new_instance=False)
-                    for field, val in zip(model_rel.fields, row):
-                        setattr(model_rel, field, val)
-                    setattr(model, k, model_rel)
+                    model_rel_class = MetaModel.classes_dict[v[0]]
+                    model_rel = self._create_model(model_rel_class, model_rel_class.fields, row)
+                    if k not in self.fields:
+                        if not getattr(model, k, None):
+                            setattr(model, k, [model_rel])
+                        elif isinstance(getattr(model, k), list):
+                            getattr(model, k).append(model_rel)
+                    else:
+                        setattr(model, k, model_rel)
                     row = row[len(model_rel.fields):]
-            result.append(model)
-        self._related_data = None
-        if self._is_get and result:
-            return result[0]
-        return result
+            result_dict.update({model.id: model})
+        result = list(result_dict.values())
+        self._related_data.clear()
+        return result[0] if self._is_get and result else result
 
     def save(self, fields_dict: dict = None, instance=None, ) -> None:
         if instance:
@@ -163,7 +182,7 @@ class QuerySet:
             self.value_fields_dict[key] = value
         else:
             super(QuerySet, self).__setattr__(key, value)
-            
+
     def __str__(self):
         if self._is_get:
             if self._result is None:
@@ -171,4 +190,3 @@ class QuerySet:
             return str(self._result)
         else:
             return super(QuerySet, self).__str__()
-                

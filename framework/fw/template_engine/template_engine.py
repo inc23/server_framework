@@ -16,9 +16,11 @@ class Engine:
     @staticmethod
     def _resolve_variable(context: dict, var: str) -> str:
         split_var = var.split('.')
-        if len(split_var) == 2:
-            var, attr = split_var
+        if len(split_var) > 1:
+            var, attr = split_var.pop(0), split_var.pop(0)
             var = getattr(context.get(var, ''), attr)
+            while split_var:
+                var = getattr(var, split_var.pop(0))
         else:
             var = context.get(var, '')
         return var
@@ -41,7 +43,8 @@ class Engine:
         for_blocks = FOR_BLOCK_PATTERN.finditer(raw_template)
         for for_block in for_blocks:
             build_for = ''
-            for i in context.get(for_block.group('seq'), []):
+            seq = self._resolve_variable(context, for_block.group('seq'))
+            for i in seq:
                 context_for_block = {for_block.group('variable'): i}
                 context_for_block.update(context)
                 content_with_ifs = self._build_block_if(

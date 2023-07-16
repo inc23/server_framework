@@ -2,7 +2,7 @@ import re
 
 
 FOR_BLOCK_PATTERN = re.compile(
-    r'{% for (?P<variable>\w+) in (?P<seq>\w+) %}(?P<content>[\S\s]+?){% endfor %}'
+    r'{% for (?P<variable>\w+) in (?P<seq>[a-zA-Z0-9_.]+) %}(?P<content>[\S\s]+?){% endfor %}'
 )
 
 

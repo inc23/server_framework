@@ -12,17 +12,22 @@ class MetaModel(type):
         for parent in parents:
             new_attrs.update(deepcopy(parent.fields))
         new_attrs.update(attrs)
-        related_fields = dict()
+        foreign_keys = dict()
+        related_dict = dict()
+        model = super(MetaModel, mcs).__new__(mcs, model_name, parents, new_attrs)
+        name = attrs['__qualname__'].lower()
+        model.model_name = attrs['__qualname__'].lower()
         for k, v in new_attrs.items():
             if isinstance(v, Field):
                 fields.update({k: v})
                 if v.foreign_key:
-                    related_fields.update({k: v.foreign_key.split('.')})
-        model = super(MetaModel, mcs).__new__(mcs, model_name, parents, new_attrs)
-        name = attrs['__qualname__'].lower()
+                    # foreign_keys.update({k: str(v.foreign_key).split('.')})
+                    # v.foreign_key.owner.related_dict.update({v.foreign_key.name: [v.owner.model_name, v.name]})
+                    foreign_keys.update({k: v})
+                    v.foreign_key.owner.related_dict.update({v.foreign_key.name: v})
         model.fields = fields
-        model.model_name = attrs['__qualname__'].lower()
-        model.related_fields = related_fields
+        model.foreign_keys = foreign_keys
+        model.related_dict = related_dict
         if model.orm_mode:
             mcs.classes_dict.update({name: model})
         return model
@@ -79,7 +84,7 @@ class CreateTable:
     def _create_foreign_key_line(field: dict) -> Generator[str, None, None]:
         for name, field in field.items():
             if field.foreign_key is not None:
-                model, foreign_field = field.foreign_key.split('.')
+                model, foreign_field = str(field.foreign_key).split('.')
                 on_delete = field.on_delete if field.on_delete else ''
                 yield f'\r\n\tFOREIGN KEY ({model}) REFERENCES {model}({foreign_field}){on_delete}'
 
@@ -99,3 +104,6 @@ class BaseModel(metaclass=MetaModel):
 
     def save(self) -> None:
         self.__class__.objects.save(self.value_fields_dict, self)
+
+    def __eq__(self, other):
+        return self.id == other.id

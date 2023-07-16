@@ -30,7 +30,7 @@ class FieldBase:
 
     def __init__(
             self,
-            foreign_key: None | str = None,
+            foreign_key=None,
             on_delete: None | str = None,
             nullable: bool = False,
             blank: bool = False,
@@ -43,7 +43,7 @@ class FieldBase:
         self._nullable = nullable
         self.blank = blank
         self._defaults = defaults
-        self.foreign_key = str(foreign_key) if foreign_key is not None else None
+        self.foreign_key = foreign_key if foreign_key is not None else None
         self.unique = unique
         self.placeholder = placeholder
         self.verbose_name = verbose_name
@@ -52,7 +52,7 @@ class FieldBase:
 
     def __set_name__(self, owner, name):
         self.name = name
-        self._owner = owner
+        self.owner = owner
         if not self.verbose_name:
             self.verbose_name = self.name
 
@@ -62,7 +62,7 @@ class FieldBase:
         elif other is None:
             other = 'Null'
             exp = 'IS'
-        return Expression(f'{self._owner.model_name}.{self.name} {exp} {other}')
+        return Expression(f'{self.owner.model_name}.{self.name} {exp} {other}')
 
     def __eq__(self, other) -> Expression:
         return self._create_expression(self.check_type(other), '=')
@@ -120,10 +120,13 @@ class Field(FieldBase):
         return obj.value_fields_dict[self.name]
 
     def __str__(self):
-        return f'{self._owner.model_name}.{self.name}'
+        return f'{self.owner.model_name}.{self.name}'
 
     def __neg__(self):
         return f'{self.__str__()} DESC'
+
+    def __hash__(self):
+        return hash(self.name)
 
 
 class IdField(Field):
