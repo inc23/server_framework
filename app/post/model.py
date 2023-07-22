@@ -1,7 +1,7 @@
 from datetime import datetime
 from app.user.model import User
 from framework.orm.base_model import BaseModel
-from framework.orm.field import TextField, ImageField, IntField, DateField, BoolField
+from framework.orm.field import TextField, ImageField, IntField, DateField, BoolField, ManyToManyField
 
 
 class Post(BaseModel):
@@ -32,3 +32,8 @@ class Comment(BaseModel):
     @classmethod
     def order_by(cls):
         return [-cls.created_at]
+
+
+# class Category(BaseModel):
+#     name = TextField(nullable=False, verbose_name='name')
+#     post = ManyToManyField(model=Post, on_delete='CASCADE')

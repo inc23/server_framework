@@ -239,3 +239,12 @@ class BoolField(IntField):
         if obj.value_fields_dict[self.name] == 1:
             return True
         return False
+
+
+class ManyToManyField(IdField):
+
+    def __init__(self, model, *args, **kwargs):
+        super(ManyToManyField, self).__init__(*args, **kwargs)
+        self.model = model
+        self.nullable = True
+        # self.foreign_key = model.id

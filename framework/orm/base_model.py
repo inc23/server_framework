@@ -21,8 +21,6 @@ class MetaModel(type):
             if isinstance(v, Field):
                 fields.update({k: v})
                 if v.foreign_key:
-                    # foreign_keys.update({k: str(v.foreign_key).split('.')})
-                    # v.foreign_key.owner.related_dict.update({v.foreign_key.name: [v.owner.model_name, v.name]})
                     foreign_keys.update({k: v})
                     v.foreign_key.owner.related_dict.update({v.foreign_key.name: v})
         model.fields = fields

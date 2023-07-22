@@ -46,7 +46,7 @@ class QuerySet:
         self._order_by_data = args
         return self
 
-    def _prepare_related_data(self, *args):
+    def _prepare_related_data(self, *args) -> dict:
         related_data = dict()
         if args:
             for k, v in self.model.foreign_keys.items():
@@ -74,7 +74,7 @@ class QuerySet:
                 q.JOIN(self.model_name, model_field)
         return q
 
-    def _build_query(self):
+    def _build_query(self) -> str:
         q = Query()
         if self._select_related_args is None:
             q = q.SELECT(*self.fields).FROM(self.model_name)
@@ -151,7 +151,7 @@ class QuerySet:
         query = str(q)
         self._conn.create(query, *field_dict.values())
 
-    def delete(self):
+    def delete(self) -> None:
         if self._is_get:
             q = Query()
             q = q.DELETE(self.model.model_name).WHERE(self._expression, **self._filter_kwargs)
