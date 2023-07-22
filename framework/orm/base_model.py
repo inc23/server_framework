@@ -56,7 +56,8 @@ class CreateTable:
         cursor = conn.cursor()
         for query in self._create_query():
             cursor.execute(query)
-            conn.commit()
+        conn.commit()
+        cursor.close()
 
     def _create_query(self) -> list:
         query_list = []
