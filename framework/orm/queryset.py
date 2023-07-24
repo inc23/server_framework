@@ -22,6 +22,16 @@ class QuerySet:
         self._select_related_args = None
         self._result = None
         self._order_by_data = None
+        self._limit = None
+        self._offset = None
+
+    def limit(self, limit: int):
+        self._limit = limit
+        return self
+
+    def offset(self, offset: int):
+        self._offset = offset
+        return self
 
     def filter(self, expression: Expression = None, **kwargs):
         if expression:
@@ -52,15 +62,19 @@ class QuerySet:
             for k, v in self.model.foreign_keys.items():
                 if k in args:
                     related_data[k] = str(v.foreign_key).split('.')
+                    self._related_data.update({k: str(v.foreign_key).split('.')})
             for k, v in self.model.related_dict.items():
                 if v.owner.model_name in args:
                     related_data[k] = [v.owner.model_name, v.name]
+                    self._related_data.update(
+                        {v.owner.model_name: [v.owner.model_name, v.name]})
         else:
             related_data = {k: str(v.foreign_key).split('.') for k, v in self.model.foreign_keys.items()}
             related_data.update({k: [v.owner.model_name, v.name] for k, v in self.model.related_dict.items()})
-        self._related_data = {k: str(v.foreign_key).split('.') for k, v in self.model.foreign_keys.items()}
-        self._related_data.update(
-            {v.owner.model_name: [v.owner.model_name, v.name] for k, v in self.model.related_dict.items()})
+            self._related_data = {k: str(v.foreign_key).split('.') for k, v in self.model.foreign_keys.items()}
+            self._related_data.update(
+                {v.owner.model_name: [v.owner.model_name, v.name] for k, v in self.model.related_dict.items()})
+        print(self.model.related_dict)
         return related_data
 
     def _get_select_related_query(self, q: Query, *args: str) -> Query:
@@ -86,6 +100,10 @@ class QuerySet:
         if order_data:
             order_data = [str(item) for item in order_data]
             q = q.ORDER_BY(*order_data)
+        if self._limit:
+            q = q.LIMIT(self._limit)
+        if self._offset:
+            q = q.OFFSET(self._offset)
         return str(q)
 
     def _get_db_result(self) -> list:

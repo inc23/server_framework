@@ -6,8 +6,10 @@ web_socket = f'http://{host}:{port}/' if port != 80 else f'http://{host}/'
 app_name = 'app'
 apps = ['user', 'post']
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+template_dirs = [os.path.join(os.path.join(BASE_DIR, app_name), app) for app in apps]
+template_dirs.append(os.path.join(BASE_DIR, app_name))
 template_settings = {
-    'BASE_DIR': [os.path.join(os.path.join(BASE_DIR, app_name), app) for app in apps],
+    'BASE_DIR': template_dirs,
     'TEMPLATES_DIR': 'templates'
 }
 db_dir_path = BASE_DIR

@@ -126,7 +126,7 @@ class Field(FieldBase):
         return f'{self.__str__()} DESC'
 
     def __hash__(self):
-        return hash(self.name)
+        return hash(self.__str__())
 
 
 class IdField(Field):
@@ -240,11 +240,3 @@ class BoolField(IntField):
             return True
         return False
 
-
-class ManyToManyField(IdField):
-
-    def __init__(self, model, *args, **kwargs):
-        super(ManyToManyField, self).__init__(*args, **kwargs)
-        self.model = model
-        self.nullable = True
-        # self.foreign_key = model.id

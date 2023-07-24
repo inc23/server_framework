@@ -197,6 +197,27 @@ class Join(BaseExp):
         return bool(self._data)
 
 
+class LimitOffset:
+
+    def __init__(self):
+        self.data = dict()
+
+    def add_limit(self, limit: int) -> None:
+        self.data.update({'LIMIT': limit})
+
+    def add_offset(self, offset: int) -> None:
+        self.data.update({'OFFSET': offset})
+
+    def definition(self):
+        line = ''
+        for k, v in self.data:
+            line += f'{k} {str(v)}'
+        return line
+
+    def __bool__(self):
+        return bool(self.data)
+
+
 class Query:
 
     def __init__(self):
@@ -211,7 +232,10 @@ class Query:
             'where': Where(),
             'order_by': OrderBy(),
             'insert': Insert(),
-            'values': Values()}
+            'values': Values(),
+            'limit_offset': LimitOffset()}
+        self._limit = None
+        self._offset = None
 
     def SELECT(self, *args):
         self._data['select'].add(*args)
@@ -258,6 +282,14 @@ class Query:
         self._data['join'].add(*args)
         return self
 
+    def LIMIT(self, limit: int):
+        self._data['limit_offset'].add(limit)
+        return self
+
+    def OFFSET(self, offset: int):
+        self._data['limit_offset'].add(offset)
+        return self
+
     def _lines(self) -> Generator:
         for k in self._data:
             if self._data[k]:
@@ -265,3 +297,4 @@ class Query:
 
     def __str__(self):
         return ''.join(self._lines())
+

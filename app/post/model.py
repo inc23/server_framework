@@ -1,13 +1,15 @@
 from datetime import datetime
 from app.user.model import User
 from framework.orm.base_model import BaseModel
-from framework.orm.field import TextField, ImageField, IntField, DateField, BoolField, ManyToManyField
+from framework.orm.field import TextField, ImageField, IntField, DateField, BoolField
 
 
 class Post(BaseModel):
     title = TextField(nullable=True, blank=True, verbose_name='title')
     text = TextField(nullable=False, verbose_name='text')
     image = ImageField(nullable=True, blank=True, verbose_name='image')
+    image2 = ImageField(nullable=True, blank=True, verbose_name='image2')
+    image3 = ImageField(nullable=True, blank=True, verbose_name='image3')
     author = IntField(nullable=False, foreign_key=User.id, on_delete='CASCADE')
     created_at = DateField(defaults=datetime.utcnow)
     is_publish = BoolField(defaults=False)
@@ -34,6 +36,6 @@ class Comment(BaseModel):
         return [-cls.created_at]
 
 
-# class Category(BaseModel):
-#     name = TextField(nullable=False, verbose_name='name')
-#     post = ManyToManyField(model=Post, on_delete='CASCADE')
+class Category(BaseModel):
+    name = TextField(nullable=False, verbose_name='name')
+    # post = IntField(nullable=True, foreign_key=Post.id, on_delete='CASCADE')
