@@ -57,34 +57,33 @@ class QuerySet:
         return self
 
     def _prepare_related_data(self, *args) -> dict:
-        related_data = dict()
+        related_data = []
         if args:
             for k, v in self.model.foreign_keys.items():
                 if k in args:
-                    related_data[k] = str(v.foreign_key).split('.')
+                    related_data.append((k, str(v.foreign_key).split('.')))
                     self._related_data.update({k: str(v.foreign_key).split('.')})
-            for k, v in self.model.related_dict.items():
+            for k, v in self.model.related_list:
                 if v.owner.model_name in args:
-                    related_data[k] = [v.owner.model_name, v.name]
+                    related_data.append((k, [v.owner.model_name, v.name]))
                     self._related_data.update(
                         {v.owner.model_name: [v.owner.model_name, v.name]})
         else:
             related_data = {k: str(v.foreign_key).split('.') for k, v in self.model.foreign_keys.items()}
-            related_data.update({k: [v.owner.model_name, v.name] for k, v in self.model.related_dict.items()})
+            related_data.update({k: [v.owner.model_name, v.name] for k, v in self.model.related_list})
             self._related_data = {k: str(v.foreign_key).split('.') for k, v in self.model.foreign_keys.items()}
             self._related_data.update(
-                {v.owner.model_name: [v.owner.model_name, v.name] for k, v in self.model.related_dict.items()})
-        print(self.model.related_dict)
+                {v.owner.model_name: [v.owner.model_name, v.name] for k, v in self.model.related_list})
         return related_data
 
     def _get_select_related_query(self, q: Query, *args: str) -> Query:
         related_data = self._prepare_related_data(*args)
         if related_data:
             related_models = []
-            for v in related_data.values():
+            for k, v in related_data:
                 related_models.append(f'{v[0]}.*')
             q = q.SELECT(f'{self.model_name}.*', *related_models).FROM(self.model_name)
-            for model_field in related_data.items():
+            for model_field in related_data:
                 q.JOIN(self.model_name, model_field)
         return q
 
@@ -135,7 +134,8 @@ class QuerySet:
                         if not getattr(model, k, None):
                             setattr(model, k, [model_rel])
                         elif isinstance(getattr(model, k), list):
-                            getattr(model, k).append(model_rel)
+                            if model_rel not in getattr(model, k):
+                                getattr(model, k).append(model_rel)
                     else:
                         setattr(model, k, model_rel)
                     row = row[len(model_rel.fields):]

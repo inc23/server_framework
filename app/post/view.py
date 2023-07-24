@@ -32,7 +32,7 @@ class PostDetail(CreateView):
 
     def get_context_data(self, **kwargs) -> dict:
         context = super(PostDetail, self).get_context_data(**kwargs)
-        context['post'] = Post.objects.select_related('author', 'comment').get(Post.id == self.arg)
+        context['post'] = Post.objects.select_related('author', 'comment', 'category').get(Post.id == self.arg)
         return context
 
     def form_valid(self, form) -> Response:

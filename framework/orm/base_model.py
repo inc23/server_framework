@@ -13,7 +13,7 @@ class MetaModel(type):
             new_attrs.update(deepcopy(parent.fields))
         new_attrs.update(attrs)
         foreign_keys = dict()
-        related_dict = dict()
+        related_list = []
         model = super(MetaModel, mcs).__new__(mcs, model_name, parents, new_attrs)
         name = attrs['__qualname__'].lower()
         model.model_name = attrs['__qualname__'].lower()
@@ -22,10 +22,10 @@ class MetaModel(type):
                 fields.update({k: v})
                 if v.foreign_key:
                     foreign_keys.update({k: v})
-                    v.foreign_key.owner.related_dict.update({v.foreign_key.name: v})
+                    v.foreign_key.owner.related_list.append((v.foreign_key.name, v))
         model.fields = fields
         model.foreign_keys = foreign_keys
-        model.related_dict = related_dict
+        model.related_list = related_list
         if model.orm_mode:
             mcs.classes_dict.update({name: model})
         return model

@@ -38,4 +38,4 @@ class Comment(BaseModel):
 
 class Category(BaseModel):
     name = TextField(nullable=False, verbose_name='name')
-    # post = IntField(nullable=True, foreign_key=Post.id, on_delete='CASCADE')
+    post = IntField(nullable=True, foreign_key=Post.id, on_delete='CASCADE')
