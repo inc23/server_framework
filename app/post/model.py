@@ -13,6 +13,7 @@ class Post(BaseModel):
     author = IntField(nullable=False, foreign_key=User.id, on_delete='CASCADE')
     created_at = DateField(defaults=datetime.utcnow)
     is_publish = BoolField(defaults=False)
+    rate = IntField()
 
     def __str__(self):
         return f'{self.title}'
@@ -39,3 +40,6 @@ class Comment(BaseModel):
 class Category(BaseModel):
     name = TextField(nullable=False, verbose_name='name')
     post = IntField(nullable=True, foreign_key=Post.id, on_delete='CASCADE')
+
+    def __str__(self):
+        return f'{self.name}'

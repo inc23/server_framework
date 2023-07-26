@@ -29,7 +29,6 @@ def receiver(signal: Signal, sender):
     def decorator(func):
         signal.connect(func, sender)
         return func
-
     return decorator
 
 

@@ -210,7 +210,7 @@ class LimitOffset:
 
     def definition(self):
         line = ''
-        for k, v in self.data:
+        for k, v in self.data.items():
             line += f'{k} {str(v)}'
         return line
 
@@ -283,11 +283,11 @@ class Query:
         return self
 
     def LIMIT(self, limit: int):
-        self._data['limit_offset'].add(limit)
+        self._data['limit_offset'].add_limit(limit)
         return self
 
     def OFFSET(self, offset: int):
-        self._data['limit_offset'].add(offset)
+        self._data['limit_offset'].add_offset(offset)
         return self
 
     def _lines(self) -> Generator:

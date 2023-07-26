@@ -16,11 +16,11 @@ class PostCreate(UserCheckMixin, CreateView):
 
 class PostList(ListView):
     model_class = Post
-    template_name = 'posts.html'
+    template_name = 'post.html'
     extra_context = {'title': 'posts list'}
 
     def get_queryset(self):
-        queryset = Post.objects.select_related('author')
+        queryset = Post.objects.select_related('author').order_by(-Post.rate).limit(6)
         return queryset
 
 
